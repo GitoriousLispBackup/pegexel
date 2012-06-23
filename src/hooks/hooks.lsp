@@ -55,14 +55,15 @@
   (if generate-function (funcall generate-function (eval sexpr))
       (eval sexpr)))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 			    
 (defun tex (&rest listval)
   (let* ((generate-function (second (member :generate-function listval)))
 	 (values (delete-param-pair :generate-function listval))
-	 (result (append (list (cl-u-sym 'begintex)) (list values) (list (cl-u-sym 'endtex)))))
-    (add-grammar  (cl-u-sym  'tex-grammar))
+	 (result nil))
+    (cl-user::load-grammar-file-and-eval-code "tex")    
+    (setf result (append (list (cl-u-sym 'begintex)) (list values) (list (cl-u-sym 'endtex))))
     (if generate-function (funcall generate-function result)
 	result)))
 

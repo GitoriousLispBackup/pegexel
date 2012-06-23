@@ -43,6 +43,8 @@
 
 
 (defvar *grammar* "The grammar used by generate.")
+(defvar *exo-grammar* ())
+(defvar *exo-code* ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -50,7 +52,7 @@
 ;
 
 (defvar *debug*  nil "show debug information")
-(defvar *default-tex-environment* nil "set output inside tex environment ENV (unused if grammar does not specify TEX)")
+(defvar *default-tex-environment* "exercice" "set output inside tex environment ENV (unused if grammar does not specify TEX)")
 (defvar *no-escape* nil "do not escape backslashes in strings" )
 (defvar *help*  nil "print usage information")
 (defvar *run-in-source* nil "run directly from source (no installation)")
@@ -116,6 +118,7 @@
 (defvar *basedir* (get-script-path) "base directory installation")
 (defvar *libdir* (merge-pathnames (if *run-in-source* "lib/" "share/pegexel/lib/") *basedir*))
 (defvar *hookdir*  (merge-pathnames (if *run-in-source* "hooks/" "share/pegexel/hooks/") *basedir*))
+(defvar *grammardir*  (merge-pathnames (if *run-in-source* "grammars/" "share/pegexel/grammars/") *basedir*))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -160,13 +163,7 @@
 ;
 ; read and scan exercice file
 ;
-(defvar *exo-grammar* ())
-(defvar *exo-code* ())
-
-(multiple-value-setq (*exo-grammar* *exo-code*) (split-exercice (read-grammar *filename*)))
-
-; evaluate CODE part of exo
-(eval (cons 'progn *exo-code*))
+(load-grammar-file-and-eval-code  *filename* :main t)
 
 ; generate and print 
 (format t "~{~A~^~@[ ~]~}~^ ~%" (sym-to-string (generate-exo *exo-grammar*)))
