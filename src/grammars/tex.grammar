@@ -1,4 +1,4 @@
 GRAMMAR
-(begintex -> ("\\begin{" NOSPACE tex-env NOSPACE "}"))
-(endtex -> ("\\end{" NOSPACE tex-env NOSPACE  "}" NEWLINE ))
+(begintex -> ("\begin{" NOSPACE tex-env NOSPACE "}"))
+(endtex -> ("\end{" NOSPACE tex-env NOSPACE  "}" NEWLINE ))
 (tex-env -> (result-of-function *default-tex-environment*))
