@@ -1,0 +1,20 @@
+GRAMMAR
+(exercice -> (TEX niveau situation donnees
+	  question niveau NEWLINE ))
+(niveau -> (store-result niveau (result-of-function (rand* 5))))
+(situation -> (M-Mme Nom gr-verbe cod point))
+(M-Mme -> (random-link mmme "M." "Mme."))
+(Nom -> (random-link nom "Martin" "Durand" "Saroto" "Athéné"))
+(gr-verbe -> souhait verbe)
+(souhait -> (verbe-souhait infinitif))
+(verbe-souhait -> souhaite voudrait aimerait va)
+(infinitif -> peindre enduire repeindre lasurer )
+(verbe -> peint enduit repeint lasure)
+(cod -> "le mur de cloture de son jardin" "la cloture de son terrain")
+(point -> (NOSPACE "." NEWLINE))
+(question -> (upcase Combien M-Mme Nom doit (NOSPACE - NOSPACE) elle-il acheter de pots ?))
+(elle-il -> (random-link mmme il elle))
+(? -> (NOSPACE "?" NEWLINE))
+(donnees -> ((TEX-table "cccc" (1 2 3 5) (niveau 4 3 2)) NEWLINE))
+CODE
+(defun rand* (n) (1+ (random n)))

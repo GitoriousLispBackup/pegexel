@@ -37,12 +37,15 @@
 (defun sym-to-string (phrases)
   (let ((last-was-end-phrase t))
     (loop for word in phrases
-       collect (cond ((equal word 'nospace) nil)
+       collect (cond ((equal word 'upcase) 
+		      (setf last-was-end-phrase t) "")
+		     ((equal word 'nospace) nil)
 		     ((equal word 'newline) (format nil "~%"))
 		     (last-was-end-phrase (setf last-was-end-phrase nil) 
 					  (word-capitalize word))
 		     (t (when (member word  *end-phrase* :test #'equal) 
 			  (setf last-was-end-phrase t))
 			(word-downcase word)))
-       when (equal word 'newline) collect nil)))
+       when (or (equal word 'newline)
+		(equal word 'upcase)) collect nil)))
 

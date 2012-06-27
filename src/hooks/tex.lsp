@@ -29,3 +29,47 @@
 (defun cl-u-sym (symbol)
   (let ((sym (find-symbol (symbol-name symbol) :cl-user)))
     sym))
+
+;
+; (tex-table "|l|ccc" 'hrule '(Title first second third) 'hrule
+;
+(defun get-first-list (listval)
+  (cond ((null listval) nil)
+	((consp (first listval)) (first listval))
+	(t (get-first-list (rest listval)))))
+
+(defun col-string (length)
+  (coerce (loop repeat length collect #\c) 'string))
+
+(defun cols-table (listval)
+  (list
+   (concatenate 'string
+		"["
+		(or (first listval)
+		    (col-string (length (get-first-list listval))))
+		"]")
+   (cl-u-sym 'NEWLINE)))
+
+(defun get-line (line)
+  (cond ((equal 'hline line) (list (cl-u-sym 'hline)))
+	((listp line)
+	 (loop for (a b) on line collect a when b collect '&))))
+
+(defun get-content-table (content)
+  (apply #'append 
+	 (loop for (a b) on content
+	    collect (get-line a)
+	    when (and b (not (equal a 'hline)))
+	    collect (list (cl-u-sym 'tabnewline)))))
+
+(defun tex-table (&rest listval)
+   (let* ((generate-function (second (member :generate-function listval)))
+	  (values (delete-param-pair :generate-function listval))
+	  (begintable (list (cl-u-sym 'begintabletex)))
+	  (endtable (list (cl-u-sym 'endtabletex)))
+	  (colstring (cols-table listval))
+	  (result (append begintable colstring (get-content-table (rest values)) endtable)))
+     (if generate-function 
+	 (funcall generate-function result)
+	result)))
+
