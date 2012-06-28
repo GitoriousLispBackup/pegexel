@@ -33,7 +33,7 @@
 		 (loop for line = (read-line stream nil)
 		    while line
 		    collect line
-		    collect " ")))
+		    collect (format nil "~%"))))
 
 (defun get-file-in-string (filename)
     (apply #'concatenate 'string (get-file-in-lines filename)))
