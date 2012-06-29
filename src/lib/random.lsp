@@ -1,3 +1,19 @@
+    ;; Pegexel is a little exercises generator, using common-lisp.
+    ;; Copyright (C) 2012 Yves Combe <yves@ycombe.net>
+
+    ;; This program is free software: you can redistribute it and/or modify
+    ;; it under the terms of the GNU Affero General Public License as published by
+    ;; the Free Software Foundation, either version 3 of the License, or
+    ;; (at your option) any later version.
+
+    ;; This program is distributed in the hope that it will be useful,
+    ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+    ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    ;; GNU Affero General Public License for more details.
+
+    ;; You should have received a copy of the GNU Affero General Public License
+    ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 ;; round-to : round to part of unit (deicimal, third, etc... 
 ;; idea from http://www.codecodex.com/wiki/Round_a_number_to_a_specific_decimal_place#Common_Lisp
 (defun round-to (number unit-th &optional (what #'round))
