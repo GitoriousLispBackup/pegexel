@@ -21,7 +21,7 @@
 	 (values (delete-param-pair :generate-function listval))
 	 (result nil))
     (cl-user::load-grammar-file-and-eval-code "tex")    
-    (setf result (append (list (cl-u-sym 'begintex)) (list values) (list (cl-u-sym 'endtex))))
+    (setf result (append (list (cl-u-sym 'begintex) (cl-u-sym 'upcase)) (list values) (list (cl-u-sym 'endtex))))
     (if generate-function (funcall generate-function result)
 	result)))
 
