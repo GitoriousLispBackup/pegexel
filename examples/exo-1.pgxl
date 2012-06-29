@@ -2,8 +2,9 @@ GRAMMAR
 (exercice -> (niveau situation 
 	  question niveau NEWLINE ))
 (niveau -> (store-result niveau (result-of-function (rand* 5))))
+;ceci est un commentaire
 (situation -> (M-Mme Nom gr-verbe cod point))
-(M-Mme -> (random-link mmme "M." "Mme."))
+(M-Mme -> (random-link mmme "M." "Mme.")) ; un autre
 (Nom -> (random-link nom "Martin" "Durand" "Saroto" "Athéné"))
 (gr-verbe -> souhait verbe)
 (souhait -> (verbe-souhait infinitif))
