@@ -52,7 +52,7 @@
 ;
 
 (defvar *debug*  nil "show debug information")
-(defvar *default-tex-environment* "exercice" "set output inside tex environment ENV (unused if grammar does not specify TEX)")
+(defvar *default-tex-environment* "Exercise" "set output inside tex environment ENV (unused if grammar does not specify TEX)")
 (defvar *no-escape* nil "do not escape backslashes in strings" )
 (defvar *help*  nil "print usage information")
 (defvar *run-in-source* nil "run directly from source (no installation)")

@@ -14,6 +14,12 @@
     ;; You should have received a copy of the GNU Affero General Public License
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+; get symbol in cl-user package
+(defun cl-u-sym (symbol)
+  (let ((sym (find-symbol (symbol-name symbol) :cl-user)))
+    sym))
+
 ;
 ; Keep generated values in some case
 ;
@@ -21,11 +27,11 @@
 (pushnew '(*generated-values* ()) *values-to-init*)
 
 ; Why macro? I don't want val be evaluated if not used
-(defmacro real-store-result (name val &key (generate-function nil gf-p))
+(defmacro real-store-result (name val &key (generate-function nil))
      `(if (member ,name  *generated-values*)
 	  (getf *generated-values* ,name)
 	  (setf (getf *generated-values* ,name) 
-		(if ,gf-p (funcall ,generate-function ,val)
+		(if ,generate-function (funcall ,generate-function ,val)
 		    ,val))))
 
 ; macro cannot be called by funcall. This function can.
@@ -36,6 +42,17 @@
 
 (defun get-result (&rest listval)
   (apply #'store-result (append (list (first listval) nil) (rest listval))))
+
+(defun multiple-store-result (symbols values &optional &key (generate-function nil gf-p))
+  (let ((gen-values (if generate-function (funcall generate-function values)
+			values)))
+    (loop
+       for sym in symbols
+       for val in gen-values
+       do  (store-result sym val :generate-function generate-function))
+    (if generate-function (funcall generate-function (cl-u-sym 'nothing))
+	(cl-u-sym 'nothing))))
+			    
 
 ;
 ; get random value from list, storing choice to reuse it in linked choices

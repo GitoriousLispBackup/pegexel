@@ -23,11 +23,6 @@
     (if generate-function (funcall generate-function result)
 	result)))
 
-
-(defun cl-u-sym (symbol)
-  (let ((sym (find-symbol (symbol-name symbol) :cl-user)))
-    sym))
-
 ;
 ; (tex-table "|l|ccc" 'hrule '(Title first second third) 'hrule
 ;
@@ -42,22 +37,22 @@
 (defun cols-table (listval)
   (list
    (concatenate 'string
-		"["
+		"{"
 		(or (first listval)
 		    (col-string (length (get-first-list listval))))
-		"]")
+		"}")
    (cl-u-sym 'NEWLINE)))
 
 (defun get-line (line)
-  (cond ((equal 'hline line) (list (cl-u-sym 'hline)))
-	((listp line)
-	 (loop for (a b) on line collect a when b collect '&))))
+  (cond ((listp line)
+	 (loop for (a b) on line collect a when b collect '&))
+	(t (list line))))
 
 (defun get-content-table (content)
   (apply #'append 
 	 (loop for (a b) on content
 	    collect (get-line a)
-	    when (and b (not (equal a 'hline)))
+	    when (and b (not (equal a (cl-u-sym 'hline))))
 	    collect (list (cl-u-sym 'tabnewline)))))
 
 (defun tex-table (&rest listval)

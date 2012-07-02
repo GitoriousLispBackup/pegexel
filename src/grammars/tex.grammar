@@ -5,3 +5,4 @@ GRAMMAR
 (begintabletex -> ( "\begin{tabular}" NOSPACE ))
 (endtabletex -> ( NEWLINE "\end{tabular}"))
 (tabnewline -> ("\\"  NEWLINE ))
+(hline -> ("\hline"  NEWLINE ))

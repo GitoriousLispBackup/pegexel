@@ -35,7 +35,7 @@
 
 (defun sym-to-string (phrases)
   (let ((last-was-end-phrase t))
-    (loop for word in phrases
+    (loop for word in phrases unless (equal word 'nothing)
        collect (cond ((equal word 'upcase) 
 		      (setf last-was-end-phrase t) "")
 		     ((equal word 'nospace) nil)
