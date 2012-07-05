@@ -53,7 +53,6 @@
 	     while line
 	     collect line))
     (cl:in-package :script)
-    (when *debug* (format t "Parsed ~A~%" res))
     res)))
 
 (defun read-grammar (filename)
@@ -71,18 +70,22 @@
 ; i can't dereference let vars ?
 (defvar grammar nil)
 (defvar code nil)
+(defvar variables nil)
+(defvar exo-sep (list (template 'grammar) 'grammar 
+		      (template 'code) 'code
+		      (template 'variables) 'variables))
+
 (defun split-exercice (content)
   (setf grammar nil)
   (setf code nil)
-  (let* ((part nil)
-	 (exo-sep (list (intern "GRAMMAR" :template) 'grammar (intern "CODE" :template) 'code)))
+  (let* ((part nil))
     (dolist (item content)
-      (let ((sep-item (member item exo-sep)))
-	(cond (sep-item (setf part (first (rest sep-item))))
+      (let ((sep-item (getf exo-sep item)))
+	(cond (sep-item (setf part sep-item))
 	      ((null part) nil)
 	      (t (setf (symbol-value part) (cons item (symbol-value part)))))))
-    (when *debug* (format t "grammar~%~A~%/grammar~%code~%~A~%/code~%" grammar code))
-    (values (reverse grammar)  (reverse code))))
+    (when *debug* (format t "grammar~%~A~%/grammar~%code~%~A~%/code~%variables~%~A~%/variables~%" grammar code variables))
+    (values (reverse grammar)  (reverse code) (reverse variables))))
 
 ;
 ; load supplementary grammar file
@@ -92,15 +95,19 @@
   (let ((filename (if main name 
 		      (first (directory (make-pathname :directory (pathname-directory *grammardir*) :name name :type "grammar")))))
 	(grammar nil)
-	(code nil))
-    (when *debug* (format t "Reading and parsing file ~A~%~A~%" filename *grammardir* ))
+	(code nil)
+	(variables nil))
+    (when *debug* (format t "Reading and parsing file ~A~%" filename))
     (unless filename (error "File not found  !"))
-    (multiple-value-setq (grammar code) (split-exercice (read-grammar filename)))
+    (multiple-value-setq (grammar code variables) (split-exercice (read-grammar filename)))
     (if *exo-grammar* (nconc *exo-grammar* grammar)
 	(setf *exo-grammar* grammar))
     (if *exo-code* (nconc *exo-code* code)
-	(setf *exo-code* code))    
-    (eval (cons 'progn *exo-code*))))
+	(setf *exo-code* code))
+    (if  *exo-variables* (nconc *exo-variables* variables)
+	 (setf *exo-variables* variables))
+    (when variables (eval-variables))
+    (when code (eval (cons 'progn *exo-code*)))))
 (export 'load-grammar-file-and-eval-code)
 
 ;(defun read-in-pa (str) (let ((res nil)) (in-package :test) (cl:setf res (cl:read-from-string str)) (in-package :c-user) res))

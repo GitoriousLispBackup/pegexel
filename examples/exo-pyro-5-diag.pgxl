@@ -1,0 +1,36 @@
+; exercice get from pyromath 5eme
+VARIABLES
+((h1 h2 h3 h4 h5 h6 h7) ->  (partition 30 7 :sigma 1.5 :mu 3 :normal t))
+(a -> 7)
+GRAMMAR
+(exercice -> (?-tex  situation table enonce code))
+(code -> (la valeur est (?-e a) et par le "code" (?-e (*a a))))
+(enonce -> (upcase à partir de ce tableau nospace "," construire un histogramme pour representer ces données ?point))
+(situation -> (question a-qui quoi))
+(question −> (qqun "a demandé"))
+(qqun −> on prof-anim)
+(prof-anim −> (un (?-% classe-colo professeur animateur))) 
+(a-qui −> (?-% classe-colo ?classe ?colonie))
+(?classe -> (à une classe de ?niveau))
+(?colonie -> "à un groupe d'une colonie de vacances")
+(quoi −> (combien de temps par semaine était consacré à leur sport favori ?point))
+(?point -> (NOSPACE "." NEWLINE))
+(?niveau −> sixième cinquième quatrième troisième)
+(table -> (NEWLINE "\begin{center}"
+	   (?-tex-table "|c|c|c|c|c|c|c|c|"
+		      hline
+		      ("Durée $t$" 
+		       "$0 \leqslant t < 1$"
+		       "$1 \leqslant t < 2$"
+		       "$2 \leqslant t < 3$"
+		       "$3 \leqslant t < 4$"
+		       "$4 \leqslant t < 5$"
+		       "$5 \leqslant t < 6$"
+		       "$6 \leqslant t < 7$"
+		       ) 
+		      hline
+		      ("Nombre" h1 h2 h3 h4 h5 h6 h7)
+		      hline) 
+	   "\end{center}" NEWLINE))
+CODE
+(defun *a (x) (* a x))

@@ -18,6 +18,7 @@
 ;; idea from http://www.codecodex.com/wiki/Round_a_number_to_a_specific_decimal_place#Common_Lisp
 (defun round-to (number unit-th &optional (what #'round))
   (/ (funcall what (* number unit-th)) unit-th))
+(export 'round-to)
 
 (defun p-list-of-k (p k)
   (loop repeat p collect k))
@@ -32,6 +33,7 @@
     (loop until (and (<= 0 result) (< result k))
        do (setf result (round-to (+ rmu (* rsigma (sqrt (* -2 (log (random 1.0)))) (cos (* 2 pi (random 1.0))))) round-unit-th)))
     result))
+(export 'random-normal)
 
 ;
 ; random partition of n in p numbers. uniform on normal.
@@ -48,3 +50,4 @@
 	   (incf (nth pos rlist) (/ 1 unit-th))))
     (if float (mapcar #'float rlist)
 	rlist)))
+(export 'partition)

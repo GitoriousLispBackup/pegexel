@@ -37,6 +37,7 @@
 (in-package :hooks)
 ;(defvar *init-hooks* #'(lambda(&rest x) nil) "Will be set to hooks:init-hooks")
 (export  'init-hooks)
+(use-package :template)
 
 (in-package :script)
 (defvar *grammar* "The grammar used by generate.")
@@ -46,7 +47,7 @@
 (export '(*grammar* *exo-grammar* *exo-code*  *exo-variables* ))
 
 
-;(use-package :template)
+(use-package :template)
 (use-package :hooks)
 (defvar *generate* () "WIll be set to generate")
 (export  '*generate*)
@@ -78,14 +79,14 @@
 ;   get parameters
 ;
 
-(defvar *debug*  nil "show debug information")
+(defvar *debug* nil "show debug information")
 (defvar *default-tex-environment* "Exercise" "set output inside tex environment ENV (unused if grammar does not specify TEX)")
 (defvar *no-escape* nil "do not escape backslashes in strings" )
 (defvar *help*  nil "print usage information")
 (defvar *run-in-source* nil "run directly from source (no installation)")
 (export '(*debug* *no-escape* *default-tex-environment*))
 
-; show short long var string description
+; show short long var string
 (defparameter *accepted-arguments*
   '((t "-d" "--debug" *debug* nil)
     (t "-h" "--help" *help* nil)
@@ -163,8 +164,7 @@
   (loop for  filename in
        (sort (mapcar #'namestring (directory (make-pathname :directory (pathname-directory dir) :name :wild :type "lsp"))) #'string<)
      do (when *debug* (format t "Loading file ~A~%" filename))
-       (load filename)
-       (format t "package ~A~%" *package*)))
+       (load filename)))
 (export '(*hookdir* *grammardir* load-files-from-directory) )
 
 

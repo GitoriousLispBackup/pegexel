@@ -48,7 +48,6 @@
 ;; Note: the intern function find a symbol from name or create one.
 (defun ?-% (name &rest values)
   (let* ((store-symbol (intern (concatenate 'string "link-" (symbol-name name)))))
-    (format t "~A ~A ~%" store-symbol values )
     (funcall *generate* (elt values (record-value store-symbol (random (length values)))))))
 
 

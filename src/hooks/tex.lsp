@@ -44,7 +44,7 @@
 
 (defun get-line (line)
   (cond ((listp line)
-	 (loop for (a b) on line collect a when b collect '&))
+	 (loop for (a b) on line collect a when b collect (template '&)))
 	(t (list line))))
 
 (defun get-content-table (content)

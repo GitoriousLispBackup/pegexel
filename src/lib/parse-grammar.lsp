@@ -38,6 +38,12 @@
   "Choose an element from a list at random."
   (elt choices (random (length choices))))
 
+
+(defun variable? (phrase)
+  (cond ((not (symbolp phrase)) phrase)
+	(t (if (variable-p phrase) (eval phrase)
+	       phrase))))
+
 ; This function is modified version of Norvig's to fit my goal
 (defun generate (phrase)
   "Generate a random sentence or phrase"
@@ -46,7 +52,7 @@
       (hook-or-mappend phrase)
       (let ((choices (rewrites phrase)))
 	(if (null choices)
-	    (list phrase)
+	    (list (variable? phrase))
 	    (funcall *generate* (random-elt choices))))))
 
 (setf *generate* #'generate)
@@ -56,7 +62,6 @@
   (let ((First (first listval)))
     (typecase First
       (symbol (let ((fsym (find-symbol (symbol-name First) :hooks)))
-		(format t "hook-or-mappend ~A ~A~%" fsym First)
 		(if (fboundp fsym) 
 		    (apply fsym (rest listval))
 		    (mappend *generate* listval))))
