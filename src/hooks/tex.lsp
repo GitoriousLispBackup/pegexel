@@ -14,14 +14,14 @@
     ;; You should have received a copy of the GNU Affero General Public License
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(defun tex (&rest listval)
-  (let* ((generate-function (second (member :generate-function listval)))
-	 (values (delete-param-pair :generate-function listval))
-	 (result nil))
-    (cl-user::load-grammar-file-and-eval-code "tex")    
-    (setf result (append (list (cl-u-sym 'begintex) (cl-u-sym 'upcase)) (list values) (list (cl-u-sym 'endtex))))
-    (if generate-function (funcall generate-function result)
-	result)))
+(defun ?-tex (&rest values)
+  (let* ((result nil))
+    (load-grammar-file-and-eval-code "tex")    
+    (setf result (append (list (template 'begintex)) 
+			 (list (template 'upcase)) 
+			 (list values) 
+			 (list (template 'endtex))))
+    (funcall *generate* result)))
 
 ;
 ; (tex-table "|l|ccc" 'hrule '(Title first second third) 'hrule
@@ -40,8 +40,7 @@
 		"{"
 		(or (first listval)
 		    (col-string (length (get-first-list listval))))
-		"}")
-   (cl-u-sym 'NEWLINE)))
+		"}")))
 
 (defun get-line (line)
   (cond ((listp line)
@@ -52,17 +51,17 @@
   (apply #'append 
 	 (loop for (a b) on content
 	    collect (get-line a)
-	    when (and b (not (equal a (cl-u-sym 'hline))))
-	    collect (list (cl-u-sym 'tabnewline)))))
+	    when (and b (not (eq-template a 'hline)))
+	    collect (list (template 'tabnewline)))))
 
-(defun tex-table (&rest listval)
-   (let* ((generate-function (second (member :generate-function listval)))
-	  (values (delete-param-pair :generate-function listval))
-	  (begintable (list (cl-u-sym 'begintabletex)))
-	  (endtable (list (cl-u-sym 'endtabletex)))
-	  (colstring (cols-table listval))
-	  (result (append begintable colstring (get-content-table (rest values)) endtable)))
-     (if generate-function 
-	 (funcall generate-function result)
-	result)))
-
+(defun ?-tex-table (&rest values)
+   (let* ((begintable (list (template 'begintabletex)))
+	  (endtable (list (template 'endtabletex)))
+	  (colstring (cols-table values))
+	  (result (append begintable 
+			  colstring 
+			  (list (template 'newline)) 
+			  (get-content-table 
+			   (rest values)) 
+			  endtable)))
+     (funcall *generate* result)))

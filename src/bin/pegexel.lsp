@@ -20,12 +20,43 @@
     ;; You should have received a copy of the GNU Affero General Public License
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+(defpackage :script
+  (:use :common-lisp))
+
+;; hooks package contains functions directy callable fram grammar
+(defpackage :hooks
+  (:use :common-lisp)
+  (:use :script))
+
+;; template package group code from template
+(defpackage :template
+  (:use :hooks)
+  (:use :script)
+  (:use :common-lisp))
+
+(in-package :hooks)
+;(defvar *init-hooks* #'(lambda(&rest x) nil) "Will be set to hooks:init-hooks")
+(export  'init-hooks)
+
+(in-package :script)
+(defvar *grammar* "The grammar used by generate.")
+(defvar *exo-grammar* () "grammar part of exercise template")
+(defvar *exo-code* () "code part of exercise template")
+(defvar *exo-variables* () "variables def part of exercise template")
+(export '(*grammar* *exo-grammar* *exo-code*  *exo-variables* ))
+
+
+;(use-package :template)
+(use-package :hooks)
+(defvar *generate* () "WIll be set to generate")
+(export  '*generate*)
+
 ;
 ; Arguments reading
 ;
 
 ; From Rosetta Code http://rosettacode.org/wiki/Command-line_arguments#Common_Lisp
-; changed clisp (ext:arv) to ext:args, better in script usage
+; changed clisp (ext:arv) to ext:args, better for script usage
 ; tested with GCL, CLISP, SBCL, ECL
 (defun my-argv ()
   (or
@@ -42,10 +73,6 @@
 (defvar *args* (my-argv))
 
 
-(defvar *grammar* "The grammar used by generate.")
-(defvar *exo-grammar* ())
-(defvar *exo-code* ())
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;   get parameters
@@ -56,6 +83,7 @@
 (defvar *no-escape* nil "do not escape backslashes in strings" )
 (defvar *help*  nil "print usage information")
 (defvar *run-in-source* nil "run directly from source (no installation)")
+(export '(*debug* *no-escape* *default-tex-environment*))
 
 ; show short long var string description
 (defparameter *accepted-arguments*
@@ -64,14 +92,17 @@
     (t "-t" "--tex-environment" *default-tex-environment* "ENV")
     (t "-n" "--no-escape-bs" *no-escape* nil)
     (nil "-s" "--run-in-source" *run-in-source* nil))
-  "List of arguments")
+  "List of script arguments")
 
+; suppress name/value pair from list
 (defun delete-param-pair (param list)
   (let ((nth (position param list :test #'equal)))
     (if nth (delete-if (constantly t) list :start nth :end (+ nth 2))
 	list)))
+; exported ?
 (export  'delete-param-pair)
 
+; get a parameter in short on long format and delete it from *args*
 (defun get-parameter (short long  &key (string nil) (var nil) (keep nil))
   (let* ((member-short (member  short *args* :test 'string=))
 	 (member-long (member  long *args* :test 'string=))
@@ -81,15 +112,23 @@
 			t)))
     (cond (member-rest
 	   (when  var (setf (symbol-value var) stringval))
-	   (unless keep (if string (delete-param-pair opt *args*) (delete opt *args* :test #'equal)))
-	   (when (and *debug* var) (format t "variable ~A set to ~A~%" (symbol-name var) (symbol-value var)))
+	   (unless keep (if string 
+			    (delete-param-pair opt *args*) 
+			    (delete opt *args* :test #'equal)))
+	   (when (and *debug* var) 
+	     (format t 
+		     "variable ~A set to ~A~%" 
+		     (symbol-name var) 
+		     (symbol-value var)))
 	   t)
 	  (t nil))))
 
+; parse all arguments from list
 (defun parse-arguments (arguments)
   (loop for (nil short long var stringp nil) in arguments
        do (get-parameter short long :string stringp :var var)))
 
+; show usage
 (defun show-help ()
   (when *help*
     (flet ((get-description (var) (documentation var 'variable)))
@@ -99,7 +138,6 @@
 	 do (when show (format t "~T~T~3A ~:[      ~;~:*~6A~] or ~20A ~:[      ~;~:*~6A~] : ~T~A~%" short string long  string (get-description var))))
       (quit))))
  
-
 ;with GCL, *load-truename* is not set, but first args is script name
 (defun get-script-path ()
   (flet ((get-script-path-from-args ()  (truename (first *args*)))
@@ -121,48 +159,43 @@
 (defvar *grammardir*  (merge-pathnames (if *run-in-source* "grammars/" "share/pegexel/grammars/") *basedir*))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; hooks package contains functions directy callable fram grammar
-(defpackage :hooks
-  (:use :cl)
-  (:use :cl-user))
-(in-package hooks)
-(defvar *values-to-init* nil "List of couples (var value) to init at generation start")
-(defun init-hooks ()
-  (loop for (var value) in *values-to-init*
-       do (setf (symbol-value var) value)))
-(in-package cl-user)
-
-(loop for  filename in 
-     (sort (mapcar #'namestring (directory (make-pathname :directory (pathname-directory *libdir*) :name :wild :type "lsp"))) #'string<)
-   do (when *debug* (format t "Loading library file ~A~%" filename))
-     (load filename))
-
-(loop for  filename in 
-     (sort (mapcar #'namestring (directory (make-pathname :directory (pathname-directory *hookdir*) :name :wild :type "lsp"))) #'string<)
-   do (when *debug* (format t "Loading hooks file ~A~%" filename))
-     (in-package hooks)
-     (load filename)
-     (in-package cl-user))
+(defun load-files-from-directory (dir)
+  (loop for  filename in
+       (sort (mapcar #'namestring (directory (make-pathname :directory (pathname-directory dir) :name :wild :type "lsp"))) #'string<)
+     do (when *debug* (format t "Loading file ~A~%" filename))
+       (load filename)
+       (format t "package ~A~%" *package*)))
+(export '(*hookdir* *grammardir* load-files-from-directory) )
 
 
+;; Libraries are loaded in script pakage -> Check that
+(load-files-from-directory *libdir*)
+
+
+(in-package :hooks)
+(load-files-from-directory *hookdir*)
+
+(when *debug* (format t "Exporting from hooks :~{~A ~}~%" (apropos-list "?-" :hooks)))
+(export (apropos-list "?-" :hooks))
+
+(in-package :script)
 ;
 ; Initialisation
 ;
 ; I just want random not to give always the same results
 (setf *random-state* (make-random-state t))
 
-
 ; reading exercise description file
 (defvar *filename* (first (reverse *args*)) "last elt of args has to be the filename")
 (debug-symbol '*filename*)
+(export '*filename*)
 
 ;(setf *filename* "exo1.etl")
 
 ;
 ; read and scan exercice file
 ;
+
 (load-grammar-file-and-eval-code  *filename* :main t)
 
 ; generate and print 

@@ -43,22 +43,27 @@
   "Generate a random sentence or phrase"
   (when *debug* (format t "generate ~A~%" phrase))
   (if (listp phrase)
-      (hook-or-mappend #'generate phrase)
+      (hook-or-mappend phrase)
       (let ((choices (rewrites phrase)))
 	(if (null choices)
 	    (list phrase)
-	    (generate (random-elt choices))))))
+	    (funcall *generate* (random-elt choices))))))
 
-(defun hook-or-mappend (funcname listval)
+(setf *generate* #'generate)
+
+
+(defun hook-or-mappend (listval)
   (let ((First (first listval)))
     (typecase First
       (symbol (let ((fsym (find-symbol (symbol-name First) :hooks)))
+		(format t "hook-or-mappend ~A ~A~%" fsym First)
 		(if (fboundp fsym) 
-		    (apply fsym (append (rest listval) (list :generate-function #'generate)))
-		    (mappend funcname listval))))
-      (t (mappend funcname listval)))))
+		    (apply fsym (rest listval))
+		    (mappend *generate* listval))))
+      (t (mappend *generate* listval)))))
 
 (defun generate-exo (grammar &optional (phrase 'exercice))
-  (setf *grammar* grammar)
-  (hooks::init-hooks)
-  (generate phrase))
+  (let ((start (intern (symbol-name phrase) :template)))
+    (setf *grammar* grammar)
+    (init-hooks)  
+    (funcall *generate* start)))
