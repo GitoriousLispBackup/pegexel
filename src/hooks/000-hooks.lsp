@@ -61,4 +61,11 @@
 (defun ?-!e (name &optional (sexpr nil))
   (funcall *generate* (record-value name  (eval sexpr))))
 
+;; repeat n times
+(defun ?-* (times &rest listval)
+  (funcall *generate*
+	   (apply #'append 
+		  (loop repeat (eval times)
+			collect listval))))
+
 

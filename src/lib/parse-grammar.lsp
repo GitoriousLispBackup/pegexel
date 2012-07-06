@@ -61,7 +61,7 @@
 (defun hook-or-mappend (listval)
   (let ((First (first listval)))
     (typecase First
-      (symbol (let ((fsym (find-symbol (symbol-name First) :hooks)))
+      (symbol (let ((fsym (first (member First (apropos-list "?-" :hooks)))))
 		(if (fboundp fsym) 
 		    (apply fsym (rest listval))
 		    (mappend *generate* listval))))
