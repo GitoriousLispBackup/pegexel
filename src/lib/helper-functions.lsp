@@ -31,6 +31,11 @@
   (intern (symbol-name sym) :template))
 (export  'template)
 
+(defun script (sym)
+  (intern (symbol-name sym) :script))
+(export  'script)
+
+
 
 (defun eq-template (cible sym)
   (equal cible (template sym)))

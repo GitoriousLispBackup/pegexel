@@ -1,0 +1,16 @@
+VARIABLES
+(?repeat -> 5) 
+((§-walk-through ?level) -> (1 1 2 3 4 5 5 6))
+GRAMMAR
+(n -> (§-e (+ 100 (random 1900))))
+(exercise -> (§-tex "Level" ?level upcase remplir les cases avec le chiffre adéquat §-point endpar enumerate))
+(enumerate -> (§-tex-env "enumerate" (§-* (length-walk '?level) level))) 
+(level -> ((§-next-walk ?level) (§-* ?repeat item)))
+(item -> (§-tex-item (§-reinit) "Level" ?level upcase Dans n le ?chiffre-nombre ?de-des ?unite-ordre est  box §-point-final))
+(?chiffre-nombre -> (§-% ch-nmb "chiffre" "nombre"))
+(?de-des -> (§-% ch-nmb des ?de))
+(?de -> (§-% u-o ("d'" nospace) de de de))
+(?unite-ordre -> (§-% u-o unités dizaines centaines milliers))
+(§-point-final -> (nospace "." newline))
+(§-point -> (nospace "."))
+(box -> "\fbox{\rule{2em}{0pt}\rule{0pt}{1.5em}}")

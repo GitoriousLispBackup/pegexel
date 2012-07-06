@@ -30,7 +30,29 @@
        for val in  listval
        do (set-variable sym val)))
 
+(defun get-walk-through-value (name)
+  (elt (get name 'values) (get name 'index)))
+(export 'get-walk-through-value)
+
+(defun set-walk-through-value (name values)
+  (pushnew name *variables*)
+  (setf (get name 'values) values)
+  (setf (get name 'index) -1)
+  (setf (symbol-value name) 'value-not-set-before-first-call-to-next-walk-!))
+
+;; in 000-hooks.lsp
+;; (defun §-next-walk (name)
+;;   (incf (get name 'index))
+;;   (set name (get-walk-through-value name)))
+
 (defun eval-variables ()
   (loop for (var nil val) in *exo-variables*
+     when *debug* do (format t "Variable: ~A ~A~%" var val)
      when (symbolp var) do (set-variable var (eval val))
-     when (consp var) do (set-multiples-variables var (eval val))))
+     when (consp var) do
+       (cond ((eq-template (first var) '§-walk-through) (set-walk-through-value (second var) val))
+	     (t (set-multiples-variables var (eval val))))))
+
+(defun length-walk (name)
+  (length (get name 'values)))
+(export 'length-walk)
