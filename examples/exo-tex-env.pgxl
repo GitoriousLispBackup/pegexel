@@ -1,0 +1,4 @@
+GRAMMAR
+(exercise -> (§-tex (§-tex-env "center" debut suite endpar fin newline)))
+(debut -> rien)
+(fin -> pas plus)
