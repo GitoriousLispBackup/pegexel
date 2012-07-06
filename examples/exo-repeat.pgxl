@@ -1,4 +1,4 @@
 VARIABLES
 (n -> (1+ 7))
 GRAMMAR
-(exercice -> ((§-* n moi je) nospace "." newline))
+(exercise -> ((§-* n moi je) nospace "." newline))

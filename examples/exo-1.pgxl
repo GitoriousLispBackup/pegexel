@@ -1,5 +1,5 @@
 GRAMMAR
-(exercice -> (niveau situation 
+(exercise -> (niveau situation 
 	  question niveau NEWLINE ))
 (niveau -> (§-!e niveau (rand* 5)))
 ;ceci est un commentaire

@@ -67,8 +67,8 @@
 		    (mappend *generate* listval))))
       (t (mappend *generate* listval)))))
 
-(defun generate-exo (grammar &optional (phrase 'exercice))
-  (let ((start (intern (symbol-name phrase) :template)))
+(defun generate-exo (grammar &optional (phrase 'exercise))
+  (let ((start (template phrase)))
     (setf *grammar* grammar)
     (init-hooks)  
     (funcall *generate* start)))

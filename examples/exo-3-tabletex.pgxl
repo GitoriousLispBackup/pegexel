@@ -1,5 +1,5 @@
 GRAMMAR
-(exercice -> (§-tex niveau situation donnees
+(exercise -> (§-tex niveau situation donnees
 	  question niveau NEWLINE ))
 (niveau -> (§-!e niveau (rand* 5)))
 (situation -> (M-Mme Nom gr-verbe cod point))
