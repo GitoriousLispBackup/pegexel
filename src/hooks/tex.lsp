@@ -66,3 +66,13 @@
 			  endtable)))
      (funcall *generate* result)))
 
+(defun set-tex-env (name &key (end nil))
+  (unless (stringp name) (error "TeX environment name must be a string !"))
+  (list (if end (template 'end-tex-env) 
+	    (template 'begin-tex-env))
+	name 
+	(template 'close-brace)))
+
+
+(defun §-tex-env (name &rest listval)
+  (funcall *generate* (append (set-tex-env name) listval (set-tex-env name :end t))))
