@@ -1,7 +1,7 @@
 GRAMMAR
 (begintex -> ("\begin{" NOSPACE tex-env NOSPACE "}"))
 (endtex -> ("\end{" NOSPACE tex-env NOSPACE  "}" NEWLINE ))
-(tex-env -> (?-e *default-tex-environment*))
+(tex-env -> (§-e *default-tex-environment*))
 (begintabletex -> ( "\begin{tabular}" NOSPACE ))
 (endtabletex -> ( NEWLINE "\end{tabular}"))
 (tabnewline -> ("\\"  NEWLINE ))

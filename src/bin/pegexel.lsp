@@ -175,8 +175,8 @@
 (in-package :hooks)
 (load-files-from-directory *hookdir*)
 
-(when *debug* (format t "Exporting from hooks :~{~A ~}~%" (apropos-list "?-" :hooks)))
-(export (apropos-list "?-" :hooks))
+(when *debug* (format t "Exporting from hooks :~{~A ~}~%" (apropos-list "§-" :hooks)))
+(export (apropos-list "§-" :hooks))
 
 (in-package :script)
 ;

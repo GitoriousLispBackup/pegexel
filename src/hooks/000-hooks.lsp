@@ -40,13 +40,13 @@
 ;; 	  (setf (getf *generated-values* name) 
 ;; 		val)))
 
-(defun ?-! (name  &optional (val nil))
+(defun §-! (name  &optional (val nil))
   (record-value name (when val (funcall *generate* val))))
 
 ;; get random value from list, storing choice to reuse it in linked choices
 
 ;; Note: the intern function find a symbol from name or create one.
-(defun ?-% (name &rest values)
+(defun §-% (name &rest values)
   (let* ((store-symbol (intern (concatenate 'string "link-" (symbol-name name)))))
     (funcall *generate* (elt values (record-value store-symbol (random (length values)))))))
 
@@ -54,15 +54,15 @@
 ;; Evaluation of sexpr has to be passed through generate after
 
 ;; evaluate sexpr
-(defun ?-e (sexpr)
+(defun §-e (sexpr)
   (funcall *generate* (eval sexpr)))
 
 ;; evaluate and store sexpr
-(defun ?-!e (name &optional (sexpr nil))
+(defun §-!e (name &optional (sexpr nil))
   (funcall *generate* (record-value name  (eval sexpr))))
 
 ;; repeat n times
-(defun ?-* (times &rest listval)
+(defun §-* (times &rest listval)
   (funcall *generate*
 	   (apply #'append 
 		  (loop repeat (eval times)

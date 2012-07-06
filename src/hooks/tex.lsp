@@ -14,7 +14,7 @@
     ;; You should have received a copy of the GNU Affero General Public License
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(defun ?-tex (&rest values)
+(defun §-tex (&rest values)
   (let* ((result nil))
     (load-grammar-file-and-eval-code "tex")    
     (setf result (append (list (template 'begintex)) 
@@ -24,7 +24,7 @@
     (funcall *generate* result)))
 
 ;
-; (tex-table "|l|ccc" 'hrule '(Title first second third) 'hrule
+; (§-tex-table "|l|ccc" 'hline '(Title first second third) 'hline
 ;
 (defun get-first-list (listval)
   (cond ((null listval) nil)
@@ -54,7 +54,7 @@
 	    when (and b (not (eq-template a 'hline)))
 	    collect (list (template 'tabnewline)))))
 
-(defun ?-tex-table (&rest values)
+(defun §-tex-table (&rest values)
    (let* ((begintable (list (template 'begintabletex)))
 	  (endtable (list (template 'endtabletex)))
 	  (colstring (cols-table values))
@@ -65,3 +65,4 @@
 			   (rest values)) 
 			  endtable)))
      (funcall *generate* result)))
+

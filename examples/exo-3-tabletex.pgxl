@@ -1,10 +1,10 @@
 GRAMMAR
-(exercice -> (?-tex niveau situation donnees
+(exercice -> (§-tex niveau situation donnees
 	  question niveau NEWLINE ))
-(niveau -> (?-!e niveau (rand* 5)))
+(niveau -> (§-!e niveau (rand* 5)))
 (situation -> (M-Mme Nom gr-verbe cod point))
-(M-Mme -> (?-% mmme "M." "Mme."))
-(Nom -> (?-% nom "Martin" "Durand" "Saroto" "Athéné"))
+(M-Mme -> (§-% mmme "M." "Mme."))
+(Nom -> (§-% nom "Martin" "Durand" "Saroto" "Athéné"))
 (gr-verbe -> souhait verbe)
 (souhait -> (verbe-souhait infinitif))
 (verbe-souhait -> souhaite voudrait aimerait va)
@@ -13,8 +13,8 @@ GRAMMAR
 (cod -> "le mur de cloture de son jardin" "la cloture de son terrain")
 (point -> (NOSPACE "." NEWLINE))
 (question -> (upcase Combien M-Mme Nom doit (NOSPACE - NOSPACE) elle-il acheter de pots ?))
-(elle-il -> (?-% mmme il elle))
+(elle-il -> (§-% mmme il elle))
 (? -> (NOSPACE "?" NEWLINE))
-(donnees -> ((?-tex-table "cccc" (1 2 3 5) (niveau 4 3 2)) NEWLINE))
+(donnees -> ((§-tex-table "cccc" (1 2 3 5) (niveau 4 3 2)) NEWLINE))
 CODE
 (defun rand* (n) (1+ (random n)))
