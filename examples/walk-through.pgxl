@@ -1,0 +1,4 @@
+VARIABLES
+((§-walk-through ?w) -> (partition 30 7 :sigma 1 :mu 5 :min 1 :normal t))
+GRAMMAR
+(exercise -> (§-* 7 (§-> ?w) valeur ?w newline)) 
