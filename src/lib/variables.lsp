@@ -36,7 +36,10 @@
 
 (defun set-walk-through-value (name values)
   (pushnew name *variables*)
-  (setf (get name 'values) values)
+  (setf (get name 'values) (if (and (symbolp (first values))
+				    (fboundp (first values)))
+			       (eval values)
+			       values))
   (setf (get name 'index) -1)
   (setf (symbol-value name) 'value-not-set-before-first-call-to-next-walk-!))
 

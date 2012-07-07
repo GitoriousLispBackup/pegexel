@@ -1,0 +1,7 @@
+VARIABLES
+((§-walk-through ?w) -> (partition 30 7 :sigma 1.5 :mu 5 :min 1 :normal t))
+GRAMMAR
+(exercise -> (§-* 7 (§-next-walk ?w) tests))
+(tests -> (test-Y " : " ?w est test-F nospace "." newline))
+(test-Y -> (§-Y (<= ?w 3) facile difficile))
+(test-F -> (§-F ?w un deux trois quatre cinq six sept huit neuf dix onze douze treize quatorze quinze))
