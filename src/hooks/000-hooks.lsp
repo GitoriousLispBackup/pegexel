@@ -50,6 +50,12 @@
   (let* ((store-symbol (intern (concatenate 'string "link-" (symbol-name name)))))
     (funcall *generate* (elt values (record-value store-symbol (random (length values)))))))
 
+;; force value to link 
+(defun §-%< (name val)
+  (let ((value (eval val))
+	(store-symbol (intern (concatenate 'string "link-" (symbol-name name)))))
+    (when value   (record-value store-symbol value)))
+  (funcall *generate* (template 'nothing)))
 
 ;; Evaluation of sexpr has to be passed through generate after
 
@@ -77,6 +83,6 @@
   (funcall *generate* (template 'nothing)))
 
 ;; in 000-hooks.lsp
-(defun §-next-walk (name)
+(defun §-> (name)
   (real-next-walk name))
 
