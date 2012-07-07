@@ -1,6 +1,6 @@
 VARIABLES
-(?repeat -> 5) 
-((§-walk-through ?level) -> (1 1 2 3 4 5 5 6))
+(?repeat -> 2) 
+((§-walk-through ?level) -> (1  2 3 4 5  6))
 GRAMMAR
 (n -> (§-e (+ 100 (random 1900))))
 (exercise -> (§-tex "Level" ?level upcase remplir les cases avec le chiffre adéquat §-point endpar enumerate))

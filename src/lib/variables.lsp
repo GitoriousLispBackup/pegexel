@@ -41,9 +41,12 @@
   (setf (symbol-value name) 'value-not-set-before-first-call-to-next-walk-!))
 
 ;; in 000-hooks.lsp
-;; (defun §-next-walk (name)
-;;   (incf (get name 'index))
-;;   (set name (get-walk-through-value name)))
+(defun real-next-walk (name)
+  (when (< (get name 'index) (1- (length-walk name)))  
+    (incf (get name 'index))
+    (setf (symbol-value name) (get-walk-through-value name)))
+  (funcall *generate* (template 'nothing)))
+(export 'real-next-walk)
 
 (defun eval-variables ()
   (loop for (var nil val) in *exo-variables*

@@ -78,7 +78,5 @@
 
 ;; in 000-hooks.lsp
 (defun §-next-walk (name)
-  (when (< (get name (script 'index)) (1- (length-walk name)))  
-    (incf (get name (script 'index)))
-    (setf (symbol-value name) (get-walk-through-value name)))
-  (funcall *generate* (template 'nothing)))
+  (real-next-walk name))
+
