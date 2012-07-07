@@ -18,8 +18,8 @@
 (defun §-Y (test if-non-nil if-nil)
   (funcall *generate* (if (eval test) if-non-nil if-nil)))
 
-;; switch case number hooks
+;; switch case number hooks (warning: index from 1 to n).
 (defun §-F (index &rest cases)
   (let* ((index-1 (1- (eval index)))
-	 (real (max 0 (min (length cases) index-1))))
+	 (real (max 0 (min (1- (length cases)) index-1))))
     (funcall *generate* (elt cases real))))
