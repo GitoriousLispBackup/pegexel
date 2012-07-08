@@ -106,8 +106,8 @@
 	(setf *exo-code* code))
     (if  *exo-variables* (nconc *exo-variables* variables)
 	 (setf *exo-variables* variables))
-    (when variables (eval-variables))
-    (when code (eval (cons 'progn *exo-code*)))))
+    (when code (eval (cons 'progn *exo-code*)))
+    (when variables (eval-variables))))
 (export 'load-grammar-file-and-eval-code)
 
 ;(defun read-in-pa (str) (let ((res nil)) (in-package :test) (cl:setf res (cl:read-from-string str)) (in-package :c-user) res))

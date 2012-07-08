@@ -40,7 +40,7 @@
 (use-package :template)
 
 (in-package :script)
-(defvar *grammar* "The grammar used by generate.")
+(defvar *grammar* () "The grammar used by generate.")
 (defvar *exo-grammar* () "grammar part of exercise template")
 (defvar *exo-code* () "code part of exercise template")
 (defvar *exo-variables* () "variables def part of exercise template")

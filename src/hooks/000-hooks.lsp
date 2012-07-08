@@ -31,8 +31,8 @@
 (defmacro record-value (name  &optional (val nil))
   `(if (member ,name  *generated-values*)
       (getf *generated-values* ,name)
-	  (setf (getf *generated-values* ,name) 
-		,val)))
+      (setf (getf *generated-values* ,name) 
+	    ,val)))
 
 ;; (defun record-value (name  &optional (val nil))
 ;;   (if (member name  *generated-values*)
@@ -89,9 +89,9 @@
 	      (cond ((eq-template k 'variables) (reinit-all-variables))
 		    ((eq-template k 'records) (reinit-all-records))
 		    ((member k *generated-values*) (reinit-generated-value k))
-		    ((member link-name *generated-values*) (reinit-generated-value k))
-		    (t (reinit-variable k))))
-	   (setf  *generated-values* nil)))
+		    ((member link-name *generated-values*) (reinit-generated-value link-name))
+		    (t (reinit-variable k)))))
+      (reinit-all-records))
   (funcall *generate* (template 'nothing)))
 
 ;; in 000-hooks.lsp
