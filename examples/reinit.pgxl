@@ -2,5 +2,7 @@ VARIABLES
 (n -> (random 10))
 ((a b) -> (list (random 2) (random 2)))
 GRAMMAR
-(exercise -> (§-* 10 reinit-var))
+(exercise -> (§-* 10 reinit-var reinit-generated))
 (reinit-var -> ((§-reinit n a b) n a b newline))
+(reinit-generated -> ((§-reinit mme) mmme newline))
+(mmme -> ((§-% mme M Mme) (§-% mme il elle)))

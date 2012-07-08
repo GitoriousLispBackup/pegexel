@@ -85,11 +85,13 @@
 (defun §-reinit (&rest keys-to-suppress)
   (if keys-to-suppress 
       (loop for k in keys-to-suppress
-	 do (cond ((eq-template k 'variables) (reinit-all-variables))
-		  ((eq-template k 'records) (reinit-all-records))
-		  ((member k *generated-values*) (reinit-generated-value k))
-		  (t (reinit-variable k))))
-      (setf  *generated-values* nil))
+	 do (let ((link-name  (intern (concatenate 'string "link-" (symbol-name k)))))
+	      (cond ((eq-template k 'variables) (reinit-all-variables))
+		    ((eq-template k 'records) (reinit-all-records))
+		    ((member k *generated-values*) (reinit-generated-value k))
+		    ((member link-name *generated-values*) (reinit-generated-value k))
+		    (t (reinit-variable k))))
+	   (setf  *generated-values* nil)))
   (funcall *generate* (template 'nothing)))
 
 ;; in 000-hooks.lsp
