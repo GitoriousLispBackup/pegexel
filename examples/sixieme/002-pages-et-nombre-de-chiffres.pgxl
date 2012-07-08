@@ -1,0 +1,22 @@
+VARIABLES
+((§-walk-through ?n ) -> (chiffres-possibles 200 5))
+GRAMMAR
+(exercise -> (?initial ?question ?suite  (§-* 3 ?item  ) newline))
+
+(?initial -> ((§-> ?n) upcase Pour numéroter les pages "d'un" livre on emploie ?n chiffres ?point ))
+(?question -> (Trouver le nombre de pages du livre ?point newline))
+(?suite -> ((§-> ?n) et avec ?n chiffres nospace "?" ))
+(?item -> ((§-> ?n) avec ?n chiffres nospace "?" ))
+(?point -> (nospace "."))
+CODE
+(defun nombre-chiffres-possibles (pages)
+  (loop for i from 1 to pages 
+     summing (length (format nil "~A" i)) into total
+     when (zerop (mod i 8)) collect total))
+
+(defun chiffres-possibles (pages nbr)
+  (let ((tous (nombre-chiffres-possibles pages))
+	(result nil))
+    (loop while (> nbr (length result))
+	 do (pushnew (elt tous (random (length tous))) result))
+    (sort result #'<)))
