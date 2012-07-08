@@ -19,28 +19,29 @@
 (defun variable-p (sym)
   (if (member sym *variables*) t nil))
 
-(defun set-variable (sym val)
-  (when (variable-p sym) (error "Variable ~A already defined in ~A" (symbol-value sym) *variables* ))
+(defun set-variable (sym val &key (var-index nil))
   (eval `(defvar  ,sym)) ; to suppress warnings udefined variable 
   (pushnew sym *variables*)
-  (setf (symbol-value sym) val))
+  (setf (symbol-value sym) (eval val))
+  (when var-index (setf (get sym 'var-index) var-index)))
 
-(defun set-multiples-variables (listsym listval)
+(defun set-multiples-variables (listsym listval &key (var-index nil))
   (loop for sym in listsym
-       for val in  listval
-       do (set-variable sym val)))
+       for val in  (eval listval)
+       do (set-variable sym val :var-index var-index)))
 
 (defun get-walk-through-value (name)
   (elt (get name 'values) (get name 'index)))
 (export 'get-walk-through-value)
 
-(defun set-walk-through-value (name values)
+(defun set-walk-through-value (name values &key (var-index nil))
   (pushnew name *variables*)
   (setf (get name 'values) (if (and (symbolp (first values))
 				    (fboundp (first values)))
 			       (eval values)
 			       values))
   (setf (get name 'index) -1)
+  (when var-index (setf (get name 'var-index) var-index))
   (setf (symbol-value name) 'value-not-set-before-first-call-to-next-walk-!))
 
 ;; in 000-hooks.lsp
@@ -51,14 +52,29 @@
   (funcall *generate* (template 'nothing)))
 (export 'real-next-walk)
 
+(defun eval-a-variable (var val &key (var-index nil))
+  (cond ((symbolp var) (set-variable var val :var-index var-index))
+	((eq-template (first var) '§-walk-through) (set-walk-through-value (second var) val :var-index var-index))
+	(t (set-multiples-variables var val :var-index var-index))))
+  
 (defun eval-variables ()
   (loop for (var nil val) in *exo-variables*
-     when *debug* do (format t "Variable: ~A ~A~%" var val)
-     when (symbolp var) do (set-variable var (eval val))
-     when (consp var) do
-       (cond ((eq-template (first var) '§-walk-through) (set-walk-through-value (second var) val))
-	     (t (set-multiples-variables var (eval val))))))
+       for index = 0 then (1+ index)
+       do (eval `(eval-a-variable ',var ',val :var-index ,index))))
 
 (defun length-walk (name)
   (length (get name 'values)))
 (export 'length-walk)
+
+(defun reinit-variable (key)
+  (when (member key *variables*)
+    (let* ((vardef (elt *exo-variables* (get key 'var-index)))
+	   (var (first vardef))
+	   (val (third vardef)))
+      (eval-a-variable var val))))
+(export 'reinit-variable)
+
+(defun reinit-all-variables ()
+  (loop for k in *variables*
+       do (reinit-variable k)))
+(export 'reinit-all-variables)

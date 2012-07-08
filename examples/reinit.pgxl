@@ -1,0 +1,6 @@
+VARIABLES
+(n -> (random 10))
+((a b) -> (list (random 2) (random 2)))
+GRAMMAR
+(exercise -> (§-* 10 reinit-var))
+(reinit-var -> ((§-reinit n a b) n a b newline))
