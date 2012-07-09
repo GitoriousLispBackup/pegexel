@@ -181,7 +181,7 @@
      :directory (remove-last (pathname-directory
 		 (handler-case 
 		     *load-truename*
-		   (unbound-variable (err) (get-script-path-from-args))))))))
+		   (unbound-variable (err) (get-script-path-from-args args))))))))
 
 (parse-arguments *accepted-arguments* *args*)
 
@@ -194,7 +194,7 @@
 
 
 (defun load-files-from-directory (dir)
-  "Load all .lsp files from directory."
+  "Load *.lsp files from directory."
   (loop for  filename in
        (sort (mapcar #'namestring (directory (make-pathname :directory (pathname-directory dir) :name :wild :type "lsp"))) #'string<)
      do (script-debug "Loading file ~A~%" filename)

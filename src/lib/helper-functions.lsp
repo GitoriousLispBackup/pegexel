@@ -18,25 +18,25 @@
 ;
 ;
 (defun add-grammar (grammar)
-;  (in-package cl-user)
+  "Append specilic grammar to main."
   (setf *grammar* (append *grammar* (symbol-value grammar))))
 (export  'add-grammar)
 
 
 (defun debug-symbol (value)
+  "Put on debug the value of a symbol."
   (script-debug "~A -> ~A~%"  (symbol-name value) (symbol-value value)))
 (export 'debug-symbol)
 
 (defun template (sym)
+  "Find the symbole sym in the :template package."
   (intern (symbol-name sym) :template))
 (export  'template)
 
 ;; (defun script (sym)
 ;;   (intern (symbol-name sym) :script))
 ;; (export  'script)
-
-
-
 (defun eq-template (cible sym)
+  "Check if 'cible is the :template version of sym"
   (equal cible (template sym)))
 (export  'eq-template)

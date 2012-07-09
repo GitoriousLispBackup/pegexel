@@ -16,10 +16,12 @@
 
 ;; if hooks
 (defun §-Y (test if-non-nil if-nil)
+  "Hook matching IF macro."
   (funcall *generate* (if (eval test) if-non-nil if-nil)))
 
 ;; switch case number hooks (warning: index from 0 to n-1).
 (defun §-F (index &rest cases)
+  "Hook matching (CASE number) macro."
   (let* ((e-index (eval index))
 	 (real (max 0 (min (1- (length cases)) e-index))))
     (funcall *generate* (elt cases real))))

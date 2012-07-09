@@ -20,19 +20,25 @@
 ;
 ; Passing generated list to strings, with  upcase after '.' '?' '!'
 ;
-(defvar *end-phrase* (list "." "!" "?" ))
+(defvar *end-phrase* (list "." "!" "?" ) "Strings marking end of phrases.")
 
 (defun word-capitalize (word)
+  "String from symbol with first letter of word upcase."
   (cond ((null word) nil)
 	      ((stringp word) word)
 	      (t (format nil "~@(~a~)" word))))
 
 (defun word-downcase (word)
+  "String from symbol downcase."
   (cond ((null word) nil)
 	((stringp word) word)
 	(t (format nil "~(~a~)" word))))
 
+;; 'nothing is ignored
+;; 'nospace replaced by nil (used by last format not to add space after word)
+;; 'upcase or end-phrase makes begin of next word uppercased.
 (defun sym-to-string (phrases)
+  "Pass list of symbols and string to list of well formated strings."
   (let ((last-was-end-phrase t))
     (loop for word in phrases unless (eq-template word 'nothing)
        collect (cond ((eq-template word 'upcase) 

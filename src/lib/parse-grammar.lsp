@@ -40,6 +40,7 @@
 
 
 (defun variable? (phrase)
+  "Return variable value if phrase  is a variable, the phrase itself if not."
   (cond ((not (symbolp phrase)) phrase)
 	(t (if (variable-p phrase) (eval phrase)
 	       phrase))))
@@ -59,6 +60,7 @@
 
 
 (defun hook-or-mappend (listval)
+  "Recursively mappend generate, or call hook function."
   (let ((First (first listval)))
     (typecase First
       (symbol (let ((fsym (first (member First (apropos-list "§-" :hooks)))))
@@ -68,6 +70,7 @@
       (t (mappend *generate* listval)))))
 
 (defun generate-exo (grammar &optional (phrase 'exercise))
+  "init and run generation."
   (let ((start (template phrase)))
     (setf *grammar* grammar)
     (init-hooks)  

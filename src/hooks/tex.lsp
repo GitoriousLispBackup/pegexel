@@ -15,6 +15,7 @@
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (defun §-tex (&rest values)
+  "Initialize tex output (hook)."
   (let* ((result nil))
     (load-grammar-file-and-eval-code "tex")    
     (setf result (append (list (template 'begintex)) 
@@ -27,14 +28,17 @@
 ; (§-tex-table "|l|ccc" 'hline '(Title first second third) 'hline
 ;
 (defun get-first-list (listval)
+  "Get the first list in listval elements."
   (cond ((null listval) nil)
 	((consp (first listval)) (first listval))
 	(t (get-first-list (rest listval)))))
 
 (defun col-string (length)
+  "Get default string for columns in tabular environment."
   (coerce (loop repeat length collect #\c) 'string))
 
 (defun cols-table (listval)
+  "Get string for columns in tabular environment."
   (list
    (concatenate 'string
 		"{"
@@ -43,11 +47,13 @@
 		"}")))
 
 (defun get-line (line)
+  "Get tabular line with '&' (or hline...)."
   (cond ((listp line)
 	 (loop for (a b) on line collect a when b collect (template '&)))
 	(t (list line))))
 
 (defun get-content-table (content)
+   "Get tabular content from lists."
   (apply #'append 
 	 (loop for (a b) on content
 	    collect (get-line a)
@@ -55,6 +61,7 @@
 	    collect (list (template 'tabnewline)))))
 
 (defun §-tex-table (&rest values)
+  "Output tex tabular from lists (hook)."
    (let* ((begintable (list (template 'begintabletex)))
 	  (endtable (list (template 'endtabletex)))
 	  (colstring (cols-table values))
@@ -67,6 +74,7 @@
      (funcall *generate* result)))
 
 (defun set-tex-env (name &key (end nil))
+  "Output generic tex environment begin or end."
   (unless (stringp name) (error "TeX environment name must be a string !"))
   (list (if end (template 'end-tex-env) 
 	    (template 'begin-tex-env))
@@ -75,4 +83,5 @@
 
 
 (defun §-tex-env (name &rest listval)
+  "Output generic tex environment (hook)."
   (funcall *generate* (append (set-tex-env name) listval (set-tex-env name :end t))))

@@ -19,6 +19,7 @@
 ;; hook cah simply add a list  (var value) here to reinit it each time
 (defvar *values-to-init* nil "List of couples (var value) to init at generation start")
 (defun init-hooks ()
+  "Initialisation functions for hooks."
   (loop for (var value) in *values-to-init*
        do (setf (symbol-value var) value)))
 (export 'init-hooks)
@@ -29,29 +30,26 @@
 (pushnew '(*generated-values* ()) *values-to-init*)
 
 (defmacro record-value (name  &optional (val nil))
+  "Record name and value in a plist if they not exist in. Send value if they exist."
   `(if (member ,name  *generated-values*)
       (getf *generated-values* ,name)
       (setf (getf *generated-values* ,name) 
 	    ,val)))
 
-;; (defun record-value (name  &optional (val nil))
-;;   (if (member name  *generated-values*)
-;;       (getf *generated-values* name)
-;; 	  (setf (getf *generated-values* name) 
-;; 		val)))
-
 (defun §-! (name  &optional (val nil))
+  "Record value (hook).$"
   (record-value name (when val (funcall *generate* val))))
 
 ;; get random value from list, storing choice to reuse it in linked choices
-
 ;; Note: the intern function find a symbol from name or create one.
 (defun §-% (name &rest values)
+  "Get random value storing position, or using stored position."
   (let* ((store-symbol (intern (concatenate 'string "link-" (symbol-name name)))))
     (funcall *generate* (elt values (record-value store-symbol (random (length values)))))))
 
 ;; force value to link 
 (defun §-%< (name val)
+  "Force position for §-% hook."
   (let ((value (eval val))
 	(store-symbol (intern (concatenate 'string "link-" (symbol-name name)))))
     (when value   (record-value store-symbol value)))
@@ -60,15 +58,20 @@
 ;; Evaluation of sexpr has to be passed through generate after
 
 ;; evaluate sexpr
+;; MAYBE obsolete with variables?
 (defun §-e (sexpr)
+  "Evaluate (hook)."
   (funcall *generate* (eval sexpr)))
 
 ;; evaluate and store sexpr
+;; MAYBE obsolete with variables?
 (defun §-!e (name &optional (sexpr nil))
+  "Evaluate and store (hook)."
   (funcall *generate* (record-value name  (eval sexpr))))
 
 ;; repeat n times
 (defun §-* (times &rest listval)
+  "Repeat generation (hook)."
   (funcall *generate*
 	   (apply #'append 
 		  (loop repeat (eval times)
@@ -76,13 +79,16 @@
 
 
 (defun reinit-generated-value (key)
+  "Suppress stored value in plist."
   (remf *generated-values* key))
 
 (defun reinit-all-records ()
+  "Suppress all stored value in plist."
   (setf  *generated-values* nil))
 
 ; default is reinit generated
 (defun §-reinit (&rest keys-to-suppress)
+  "Reinit hook: suppress rtoredplist values and reset variables."
   (if keys-to-suppress 
       (loop for k in keys-to-suppress
 	 do (let ((link-name  (intern (concatenate 'string "link-" (symbol-name k)))))
@@ -96,5 +102,6 @@
 
 ;; in 000-hooks.lsp
 (defun §-> (name)
+  "Next step walk-through variable (hook)."
   (real-next-walk name))
 

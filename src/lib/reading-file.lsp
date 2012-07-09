@@ -15,18 +15,10 @@
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;
-; File scanning with read
-; UNUSED
-(defun get-file (filename)
-  (with-open-file (stream filename)
-    (loop for line = (read stream nil)
-          while line
-          collect line)))
-
-;
 ; File scaning in string
 ;
 (defun get-file-in-lines (filename)
+  "Read file into a list of string separated by newlines."
   (with-open-file (stream filename)
 		 (loop for line = (read-line stream nil)
 		    while line
@@ -34,9 +26,11 @@
 		    collect (format nil "~%"))))
 
 (defun get-file-in-string (filename)
+  "concatenate strings to make file into only one string."
     (apply #'concatenate 'string (get-file-in-lines filename)))
 
 (defun escape-bs-in-string (str)
+  "Double '\' to escape them for lisp reader."
   (let ((inside-string nil))
     (coerce (loop for char across str
 	       collect char
@@ -45,6 +39,7 @@
 	    'string)))
 
 (defun get-from-string (str)
+  "Parse string with lisp reader, in package :template."
   (with-input-from-string (stream str) 
     (let ((res nil))
     (in-package :template)
@@ -56,6 +51,7 @@
     res)))
 
 (defun read-grammar (filename)
+  "Read and parse grammar from filename."
   (let ((string-lines (get-file-in-string filename)))
     (get-from-string 
      (if *no-escape* string-lines
@@ -68,14 +64,16 @@
 ; get GRAMMAR part and CODE part 
 
 ; i can't dereference let vars ?
-(defvar grammar nil)
-(defvar code nil)
-(defvar variables nil)
+(defvar grammar nil "Local to put read grammar in.")
+(defvar code nil "Local to put read grammar in.")
+(defvar variables nil "Local to put read variables in.")
 (defvar exo-sep (list (template 'grammar) 'grammar 
 		      (template 'code) 'code
-		      (template 'variables) 'variables))
+		      (template 'variables) 'variables)
+  "Match template symbol with sexpr destination." )
 
 (defun split-exercice (content)
+  "Split parsed content into variable, grammar, code parts."
   (setf grammar nil)
   (setf code nil)
   (let* ((part nil))
@@ -92,6 +90,7 @@
 ;
 ; code is evalued in cl-user package, bàck to current package at end
 (defun load-grammar-file-and-eval-code (name &key (main nil))
+  "Read, parse, set variables and eval code from a template file."
   (let ((filename (if main name 
 		      (first (directory (make-pathname :directory (pathname-directory *grammardir*) :name name :type "grammar")))))
 	(grammar nil)
@@ -110,5 +109,3 @@
     (when code (eval (cons 'progn *exo-code*)))
     (when variables (eval-variables))))
 (export 'load-grammar-file-and-eval-code)
-
-;(defun read-in-pa (str) (let ((res nil)) (in-package :test) (cl:setf res (cl:read-from-string str)) (in-package :c-user) res))
