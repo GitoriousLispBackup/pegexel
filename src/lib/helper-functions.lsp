@@ -24,7 +24,7 @@
 
 
 (defun debug-symbol (value)
-  (when *debug* (format t "~A -> ~A~%"  (symbol-name value) (symbol-value value))))
+  (script-debug "~A -> ~A~%"  (symbol-name value) (symbol-value value)))
 (export 'debug-symbol)
 
 (defun template (sym)

@@ -21,21 +21,23 @@
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (defpackage :script
+  (:documentation "Namespace for the main script")
   (:use :common-lisp))
 
 ;; hooks package contains functions directy callable fram grammar
 (defpackage :hooks
+  (:documentation "Namespace for the functions callable inside the grammar generation")
   (:use :common-lisp)
   (:use :script))
 
 ;; template package group code from template
 (defpackage :template
+  (:documentation "Namespace for the template exercise")
   (:use :hooks)
   (:use :script)
   (:use :common-lisp))
 
 (in-package :hooks)
-;(defvar *init-hooks* #'(lambda(&rest x) nil) "Will be set to hooks:init-hooks")
 (export  'init-hooks)
 (use-package :template)
 
@@ -49,7 +51,7 @@
 
 (use-package :template)
 (use-package :hooks)
-(defvar *generate* () "WIll be set to generate")
+(defvar *generate* () "WIll be set to #'generate")
 (export  '*generate*)
 
 ;
@@ -60,6 +62,7 @@
 ; changed clisp (ext:arv) to ext:args, better for script usage
 ; tested with GCL, CLISP, SBCL, ECL
 (defun my-argv ()
+  "Get the command-lines arguments."
   (or
    #+clisp (cons "clisp" ext:*args*)
    #+sbcl sb-ext:*posix-argv*
@@ -71,7 +74,32 @@
    #+lispworks sys:*line-arguments-list*
    nil))
 
-(defvar *args* (my-argv))
+; from http://www.cliki.net/Portable%20Exit
+; fixed :unix-code in sbcl
+(defun quit (&optional code)
+      ;; This group from "clocc-port/ext.lisp"
+      #+allegro (excl:exit code)
+      #+clisp (#+lisp=cl ext:quit #-lisp=cl lisp:quit code)
+      #+cmu (ext:quit code)
+      #+cormanlisp (win32:exitprocess code)
+      #+gcl (lisp:bye code)                     ; XXX Or is it LISP::QUIT?
+      #+lispworks (lw:quit :status code)
+      #+lucid (lcl:quit code)
+      #+sbcl (sb-ext:quit) 
+;     #+sbcl (sb-ext:quit :unix-code (typecase code (number code) (null 0) (t 1)))
+      ;; This group from Maxima
+      #+kcl (lisp::bye)                         ; XXX Does this take an arg?
+      #+scl (ext:quit code)                     ; XXX Pretty sure this *does*.
+      #+(or openmcl mcl) (ccl::quit)
+      #+abcl (cl-user::quit)
+      #+ecl (si:quit)
+      ;; This group from 
+      #+poplog (poplog::bye)                    ; XXX Does this take an arg?
+      #-(or allegro clisp cmu cormanlisp gcl lispworks lucid sbcl
+            kcl scl openmcl mcl abcl ecl)
+      (error 'not-implemented :proc (list 'quit code)))
+
+(defvar *args* (my-argv) "Command line arguments.")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -93,20 +121,26 @@
     (t "-t" "--tex-environment" *default-tex-environment* "ENV")
     (t "-n" "--no-escape-bs" *no-escape* nil)
     (nil "-s" "--run-in-source" *run-in-source* nil))
-  "List of script arguments")
+  "List of parsed script arguments")
 
 ; suppress name/value pair from list
 (defun delete-param-pair (param list)
+  "Suppress from a list a key and the following value. TODO: use remf ?" 
   (let ((nth (position param list :test #'equal)))
     (if nth (delete-if (constantly t) list :start nth :end (+ nth 2))
 	list)))
-; exported ?
-(export  'delete-param-pair)
+
+; exported ? Not exported for now.  (export  'delete-param-pair)
+
+(defun script-debug (&rest format-values)
+  (when *debug* (apply #'format (cons *error-output* format-values))))
+(export 'script-debug)
 
 ; get a parameter in short on long format and delete it from *args*
-(defun get-parameter (short long  &key (string nil) (var nil) (keep nil))
-  (let* ((member-short (member  short *args* :test 'string=))
-	 (member-long (member  long *args* :test 'string=))
+(defun get-parameter (short long  args &key (string nil) (var nil) (keep nil))
+  "Parse parameter from arguments list." 
+  (let* ((member-short (member  short args :test 'string=))
+	 (member-long (member  long args :test 'string=))
 	 (member-rest (or member-short member-long))
 	 (opt (if member-short short long))
 	 (stringval (if string (second member-rest)
@@ -114,23 +148,21 @@
     (cond (member-rest
 	   (when  var (setf (symbol-value var) stringval))
 	   (unless keep (if string 
-			    (delete-param-pair opt *args*) 
-			    (delete opt *args* :test #'equal)))
-	   (when (and *debug* var) 
-	     (format t 
-		     "variable ~A set to ~A~%" 
-		     (symbol-name var) 
-		     (symbol-value var)))
+			    (delete-param-pair opt args) 
+			    (delete opt args :test #'equal)))
+	   (when var (script-debug "variable ~A set to ~A~%" 
+				   (symbol-name var) 
+				   (symbol-value var)))
 	   t)
 	  (t nil))))
 
-; parse all arguments from list
-(defun parse-arguments (arguments)
-  (loop for (nil short long var stringp nil) in arguments
-       do (get-parameter short long :string stringp :var var)))
+(defun parse-arguments (accepted-arguments args)
+  "Parse all accepted arguments from list."
+  (loop for (nil short long var stringp nil) in accepted-arguments
+       do (get-parameter short long args :string stringp :var var)))
 
-; show usage
 (defun show-help ()
+  "Show usage."
   (when *help*
     (flet ((get-description (var) (documentation var 'variable)))
       (format t "pegexel [options] file~%")
@@ -140,8 +172,9 @@
       (quit))))
  
 ;with GCL, *load-truename* is not set, but first args is script name
-(defun get-script-path ()
-  (flet ((get-script-path-from-args ()  (truename (first *args*)))
+(defun get-script-path (args)
+  "Get script path from *load-truename* or first command-line argument (GCL only ?)"
+  (flet ((get-script-path-from-args (args)  (truename (first args)))
 	 (remove-last (list) (let ((nth+1 (length list)))
 			       (remove-if (constantly t) list :start (1- nth+1) :end nth+1))))
     (make-pathname 
@@ -150,32 +183,31 @@
 		     *load-truename*
 		   (unbound-variable (err) (get-script-path-from-args))))))))
 
-(parse-arguments *accepted-arguments*)
+(parse-arguments *accepted-arguments* *args*)
 
 (show-help)
 
-(defvar *basedir* (get-script-path) "base directory installation")
+(defvar *basedir* (get-script-path *args*) "base directory installation")
 (defvar *libdir* (merge-pathnames (if *run-in-source* "lib/" "share/pegexel/lib/") *basedir*))
 (defvar *hookdir*  (merge-pathnames (if *run-in-source* "hooks/" "share/pegexel/hooks/") *basedir*))
 (defvar *grammardir*  (merge-pathnames (if *run-in-source* "grammars/" "share/pegexel/grammars/") *basedir*))
 
 
 (defun load-files-from-directory (dir)
+  "Load all .lsp files from directory."
   (loop for  filename in
        (sort (mapcar #'namestring (directory (make-pathname :directory (pathname-directory dir) :name :wild :type "lsp"))) #'string<)
-     do (when *debug* (format t "Loading file ~A~%" filename))
+     do (script-debug "Loading file ~A~%" filename)
        (load filename)))
 (export '(*hookdir* *grammardir* load-files-from-directory) )
-
 
 ;; Libraries are loaded in script pakage -> Check that
 (load-files-from-directory *libdir*)
 
-
 (in-package :hooks)
 (load-files-from-directory *hookdir*)
 
-(when *debug* (format t "Exporting from hooks :~{~A ~}~%" (apropos-list "§-" :hooks)))
+(script-debug "Exporting from hooks :~{~A ~}~%" (apropos-list "§-" :hooks))
 (export (apropos-list "§-" :hooks))
 
 (in-package :script)
@@ -186,7 +218,7 @@
 (setf *random-state* (make-random-state t))
 
 ; reading exercise description file
-(defvar *filename* (first (reverse *args*)) "last elt of args has to be the filename")
+(defvar *filename* (first (reverse *args*)) "last elt of args has to be the filename.")
 (debug-symbol '*filename*)
 (export '*filename*)
 

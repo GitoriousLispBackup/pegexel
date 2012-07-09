@@ -47,7 +47,7 @@
 ; This function is modified version of Norvig's to fit my goal
 (defun generate (phrase)
   "Generate a random sentence or phrase"
-  (when *debug* (format t "generate ~A~%" phrase))
+  (script-debug "generate ->  ~A~%" phrase)
   (if (listp phrase)
       (hook-or-mappend phrase)
       (let ((choices (rewrites phrase)))

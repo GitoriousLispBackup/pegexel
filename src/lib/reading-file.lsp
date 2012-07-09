@@ -84,7 +84,7 @@
 	(cond (sep-item (setf part sep-item))
 	      ((null part) nil)
 	      (t (setf (symbol-value part) (cons item (symbol-value part)))))))
-    (when *debug* (format t "grammar~%~A~%/grammar~%code~%~A~%/code~%variables~%~A~%/variables~%" grammar code variables))
+    (script-debug "Parsed :~%grammar~%~A~%/grammar~%code~%~A~%/code~%variables~%~A~%/variables~%" grammar code variables)
     (values (reverse grammar)  (reverse code) (reverse variables))))
 
 ;
@@ -97,7 +97,7 @@
 	(grammar nil)
 	(code nil)
 	(variables nil))
-    (when *debug* (format t "Reading and parsing file ~A~%" filename))
+    (script-debug "Reading and parsing file ~A~%" filename)
     (unless filename (error "File not found  !"))
     (multiple-value-setq (grammar code variables) (split-exercice (read-grammar filename)))
     (if *exo-grammar* (nconc *exo-grammar* grammar)
@@ -106,6 +106,7 @@
 	(setf *exo-code* code))
     (if  *exo-variables* (nconc *exo-variables* variables)
 	 (setf *exo-variables* variables))
+    (when variables (defvar-all))
     (when code (eval (cons 'progn *exo-code*)))
     (when variables (eval-variables))))
 (export 'load-grammar-file-and-eval-code)
