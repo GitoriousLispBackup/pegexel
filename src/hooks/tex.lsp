@@ -22,6 +22,7 @@
 			 (list (template 'upcase)) 
 			 (list values) 
 			 (list (template 'endtex))))
+    (setf *output-type* "tex")
     (funcall *generate* result)))
 
 ;

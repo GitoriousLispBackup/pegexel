@@ -108,18 +108,24 @@
 ;
 
 (defvar *debug* nil "show debug information")
-(defvar *default-tex-environment* "Exercise" "set output inside tex environment ENV (unused if grammar does not specify TEX)")
+(defvar *quiet* nil "suppress normal output")
+(defvar *default-tex-environment* "Exercise" "if grammar specify TEX, set output in environment ENV.")
 (defvar *no-escape* nil "do not escape backslashes in strings" )
 (defvar *help*  nil "print usage information")
 (defvar *run-in-source* nil "run directly from source (no installation)")
+(defvar *output-directory* "pegexel-output/" "output directory to place generated files (relative to template file).")
+(defvar *output-filename* nil  "output filename (default generated from template filename).")
 (export '(*debug* *no-escape* *default-tex-environment*))
 
 ; show short long var string
 (defparameter *accepted-arguments*
   '((t "-d" "--debug" *debug* nil)
+    (t "-q" "--quiet" *quiet* nil)
     (t "-h" "--help" *help* nil)
-    (t "-t" "--tex-environment" *default-tex-environment* "ENV")
+    (t "-t" "--tex-env" *default-tex-environment* "ENV")
     (t "-n" "--no-escape-bs" *no-escape* nil)
+    (t "-w" "--where" *output-directory* "DIR")
+    (t "-o" "--output" *output-filename* "FILE")
     (nil "-s" "--run-in-source" *run-in-source* nil))
   "List of parsed script arguments")
 
@@ -168,7 +174,7 @@
       (format t "pegexel [options] file~%")
       (format t "~Twhere options are:~%")
       (loop for (show short long var string) in *accepted-arguments*
-	 do (when show (format t "~T~T~3A ~:[      ~;~:*~6A~] or ~20A ~:[      ~;~:*~6A~] : ~T~A~%" short string long  string (get-description var))))
+	 do (when show (format t "~T~T~3A ~:[      ~;~:*~6A~] or ~15A ~:[      ~;~:*~6A~] : ~T~A~%" short string long  string (get-description var))))
       (quit))))
  
 ;with GCL, *load-truename* is not set, but first args is script name
@@ -187,11 +193,61 @@
 
 (show-help)
 
+; reading exercise description file
+(defvar *filename* (first (reverse *args*)) "last elt of args has to be the filename.")
+(script-debug "Template filename : ~A~%" *filename*)
+(export '*filename*)
+
+(defvar *output-type* nil)
+(export '*output-type*)
+
+
+(defun check-number3 (str)
+  "Check if str is between 000 and 999"
+  (and (string< "000" str)
+       (string< str "999")))
+
+(defun output-name-from-input-name (output-directory input-name)
+  "Get output file name from template name + number."
+  (let* ((name (concatenate 'string (pathname-name input-name) "_"))
+	 (files* (directory (make-pathname :directory (pathname-directory output-directory) 
+					  :name :wild
+					  :type *output-type*)))
+	 (files (loop for f in files* when (equal 0 (search name (pathname-name f)))
+		   collect  (subseq (pathname-name f) (length name))))
+ 	 (number (loop for f in files when (check-number3 f)
+		       maximizing (read-from-string f) into max
+		       finally (return (1+ max)))))
+    (make-pathname :directory (pathname-directory output-directory)
+		   :name (concatenate 'string name (format nil "~3,'0d" number))
+		   :type *output-type*)))
+
+(defun base-name (path)
+  "base name of path"
+  (when path (namestring
+	      (make-pathname :name (pathname-name path)
+			   :type (pathname-type path)))))
+
+(defun get-directory-from-path (path)
+  (if path (namestring (make-pathname :directory (pathname-directory path))) 
+      ""))
+
+(defun output-file (input where output)
+  "Get output file."
+  (let* ((output-file (base-name output))
+	 (input-directory (get-directory-from-path input))
+	 (output-directory (get-directory-from-path output))
+	 (outdir (ensure-directories-exist 
+		  (make-pathname :directory (pathname-directory (concatenate 'string input-directory "/" where "/" output-directory "/"))))))
+    (cond (output (unless (equal *output-type* (pathname-type output-file )) 
+		    (concatenate 'string  output-file "." *output-type*))
+		  (pathname (concatenate 'string (namestring outdir) output-file)))
+	  (t (output-name-from-input-name outdir input)))))
+
 (defvar *basedir* (get-script-path *args*) "base directory installation")
 (defvar *libdir* (merge-pathnames (if *run-in-source* "lib/" "share/pegexel/lib/") *basedir*))
 (defvar *hookdir*  (merge-pathnames (if *run-in-source* "hooks/" "share/pegexel/hooks/") *basedir*))
 (defvar *grammardir*  (merge-pathnames (if *run-in-source* "grammars/" "share/pegexel/grammars/") *basedir*))
-
 
 (defun load-files-from-directory (dir)
   "Load *.lsp files from directory."
@@ -217,11 +273,6 @@
 ; I just want random not to give always the same results
 (setf *random-state* (make-random-state t))
 
-; reading exercise description file
-(defvar *filename* (first (reverse *args*)) "last elt of args has to be the filename.")
-(debug-symbol '*filename*)
-(export '*filename*)
-
 ;(setf *filename* "exo1.etl")
 
 ;
@@ -230,5 +281,11 @@
 
 (load-grammar-file-and-eval-code  *filename* :main t)
 
-; generate and print 
-(format t "~{~A~^~@[ ~]~}~^ ~%" (sym-to-string (generate-exo *exo-grammar*)))
+; generate and print
+; generate before get output filename because extension can be changed in generation.
+(let* ((syms (generate-exo *exo-grammar*))
+       (output-filename (output-file *filename*  *output-directory*  *output-filename*)))
+  (script-debug "Output filename ~A~%" (namestring output-filename))
+  (with-open-file (stream output-filename :direction :output)
+    (unless *quiet* (format t "Generating file ~A~%" output-filename))
+    (format stream "~{~A~^~@[ ~]~}~^ ~%" (sym-to-string syms))))
