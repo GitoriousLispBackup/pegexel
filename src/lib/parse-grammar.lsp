@@ -73,5 +73,6 @@
   "init and run generation."
   (let ((start (template phrase)))
     (setf *grammar* grammar)
-    (init-hooks)  
+    (init-hooks)
+    (reinit-all-variables)
     (funcall *generate* start)))

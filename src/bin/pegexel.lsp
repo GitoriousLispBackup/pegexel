@@ -116,6 +116,7 @@
 (defvar *output-directory* "pegexel-output/" "output directory to place generated files (relative to template file).")
 (defvar *output-filename* nil  "output filename (default generated from template filename).")
 (defvar *force-rewrite* nil "Force overwrite existing output file.")
+(defvar *repeat* 1 "Repeat generation (exclude -o --output).")
 (export '(*debug* *no-escape* *default-tex-environment*))
 
 ; show short long var string
@@ -128,6 +129,7 @@
     (t "-w" "--where" *output-directory* "DIR")
     (t "-o" "--output" *output-filename* "FILE")
     (t "-f" "--force"  *force-rewrite* nil)
+    (t "-r" "--repeat" *repeat* "NUM")
     (nil "-s" "--run-in-source" *run-in-source* nil))
   "List of parsed script arguments")
 
@@ -193,8 +195,43 @@
 
 (parse-arguments *accepted-arguments* *args*)
 
+;; check arguments
+(defun last-elt (string)
+  (first (last (coerce string 'list))))
+
+(unless (char= #\/ (last-elt *output-directory*))
+  (setf *output-directory* (concatenate 'string *output-directory* "/")))
+
+;; *repeat* can not be a string 
+(when (stringp *repeat*) (setf *repeat* (read-from-string  *repeat*)))
+
+(cond ((not (numberp *repeat*))
+       (format *error-output* "-r and --repeat imply a number! Got ~A~%" *repeat*)
+       (quit))
+      ((< *repeat* 0)
+       (format *error-output* "Can not repeat a negative number ~A of times ~%" *repeat*)
+       (quit))
+      ((and (> *repeat* 1)
+	    (and *output-filename*
+		 (not (string= "--" *output-filename*))))
+       (format *error-output* "-r --repeat N>1 is incompatible with -o --output (generated filename only)~%")
+       (quit)))
+	    
+
+;; show help if needed (and quit).
 (show-help)
 
+;; Input filename
+(defvar *filename* (first (reverse *args*)) "last elt of args has to be the filename.")
+(script-debug "Template filename : ~A~%" *filename*)
+(unless (probe-file *filename*)
+  (format  *error-output* "File ~A not found!~%" *filename*)
+  (quit))
+(export '*filename*)
+
+;; Output extension type. Can be changed in hooks.
+(defvar *output-type* nil)
+(export '*output-type*)
 
 (defvar *basedir* (get-script-path *args*) "base directory installation")
 (defvar *libdir* (merge-pathnames (if *run-in-source* "lib/" "share/pegexel/lib/") *basedir*))
@@ -235,14 +272,13 @@
 
 ; generate and print
 ; generate before get output filename because extension can be changed in generation.
-(let* ((syms (generate-exo *exo-grammar*))
-       (output-filename (output-file *filename*  *output-directory*  *output-filename*)))
-  (when (probe-file output-filename)
-    (cond  (*force-rewrite* (script-debug "Deleting existing file ~A~%" output-filename)
-			    (delete-file  output-filename))
-	   (t (format *error-output* "File ~A exists! Use -f to overwrite." output-filename)
-	      (quit))))
-  (script-debug "Output filename ~A~%" (namestring output-filename))
-  (with-open-file (stream output-filename :direction :output)
-    (unless *quiet* (format t "Generating file ~A~%" output-filename))
-    (format stream "~{~A~^~@[ ~]~}~^ ~%" (sym-to-string syms))))
+(loop repeat *repeat* do
+     (let* ((syms (generate-exo *exo-grammar*))
+	    (output-filename (output-file *filename*  *output-directory*  *output-filename*))
+	    (output-stream (output-stream output-filename)))
+       (unless *quiet* 
+	 (if (string= output-filename "--")
+	     (format t "Generating on standard output.~%")
+	     (format t "Generating file ~A~%" output-filename)))
+       (format output-stream "~{~A~^~@[ ~]~}~^ ~%" (sym-to-string syms))
+       (unless (equal *standard-output* output-stream) (close output-stream))))

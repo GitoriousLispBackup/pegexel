@@ -14,15 +14,6 @@
     ;; You should have received a copy of the GNU Affero General Public License
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-; reading exercise description file
-(defvar *filename* (first (reverse *args*)) "last elt of args has to be the filename.")
-(script-debug "Template filename : ~A~%" *filename*)
-(export '*filename*)
-
-(defvar *output-type* nil)
-(export '*output-type*)
-
-
 (defun check-number3 (str)
   "Check if str is between 000 and 999"
   (and (string< "000" str)
@@ -68,10 +59,19 @@
 
 (defun output-file (input where output)
   "Get output file."
+  (when (string= "--" output) (return-from output-file output))
   (let* ((output-file (when output (check-file-type (base-name output))))
 	 (input-directory (get-directory-from-path input))
 	 (output-directory (get-directory-from-path output))
 	 (outdir (ensure-directories-exist (get-full-pathname input-directory where output-directory))))
-    (if output 
-	(pathname (concatenate 'string (namestring outdir) output-file))
-	(output-name-from-input-name outdir input))))
+    (namestring (if output 
+		    (pathname (concatenate 'string (namestring outdir) output-file))
+		    (output-name-from-input-name outdir input)))))
+
+(defun output-stream (outfilename)
+  (when (string= "--" outfilename) (return-from output-stream *STANDARD-OUTPUT*))
+  (cond (*force-rewrite* (open outfilename :direction :output :if-exists :supersede))
+	((probe-file outfilename)
+	 (format *error-output* "File ~A exists! Use -f to overwrite.~%" outfilename)
+	 (quit))
+	(t (open outfilename :direction :output))))
