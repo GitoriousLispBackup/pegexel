@@ -115,6 +115,7 @@
 (defvar *run-in-source* nil "run directly from source (no installation)")
 (defvar *output-directory* "pegexel-output/" "output directory to place generated files (relative to template file).")
 (defvar *output-filename* nil  "output filename (default generated from template filename).")
+(defvar *force-rewrite* nil "Force overwrite existing output file.")
 (export '(*debug* *no-escape* *default-tex-environment*))
 
 ; show short long var string
@@ -126,6 +127,7 @@
     (t "-n" "--no-escape-bs" *no-escape* nil)
     (t "-w" "--where" *output-directory* "DIR")
     (t "-o" "--output" *output-filename* "FILE")
+    (t "-f" "--force"  *force-rewrite* nil)
     (nil "-s" "--run-in-source" *run-in-source* nil))
   "List of parsed script arguments")
 
@@ -232,17 +234,28 @@
   (if path (namestring (make-pathname :directory (pathname-directory path))) 
       ""))
 
+(defun is-absolute (dir)
+  (equal :absolute (first (pathname-directory (or dir "")))))
+
+(defun get-full-pathname (inputdir where outputdir)
+  "merges pathnames with output dir, input dir (if not absolute), output file dir."
+  (let ((checked-inputdir (unless (is-absolute inputdir) inputdir)))
+    (merge-pathnames (merge-pathnames outputdir (or checked-inputdir (pathname ""))) (or where (pathname  "")))))
+
+(defun check-file-type (file)
+  (if (equal *output-type* (pathname-type file))
+      (concatenate 'string file "." *output-type*)
+      file))
+
 (defun output-file (input where output)
   "Get output file."
-  (let* ((output-file (base-name output))
+  (let* ((output-file (when output (check-file-type (base-name output))))
 	 (input-directory (get-directory-from-path input))
 	 (output-directory (get-directory-from-path output))
-	 (outdir (ensure-directories-exist 
-		  (make-pathname :directory (pathname-directory (concatenate 'string input-directory "/" where "/" output-directory "/"))))))
-    (cond (output (unless (equal *output-type* (pathname-type output-file )) 
-		    (concatenate 'string  output-file "." *output-type*))
-		  (pathname (concatenate 'string (namestring outdir) output-file)))
-	  (t (output-name-from-input-name outdir input)))))
+	 (outdir (ensure-directories-exist (get-full-pathname input-directory where output-directory))))
+    (if output 
+	(pathname (concatenate 'string (namestring outdir) output-file))
+	(output-name-from-input-name outdir input))))
 
 (defvar *basedir* (get-script-path *args*) "base directory installation")
 (defvar *libdir* (merge-pathnames (if *run-in-source* "lib/" "share/pegexel/lib/") *basedir*))
@@ -285,6 +298,11 @@
 ; generate before get output filename because extension can be changed in generation.
 (let* ((syms (generate-exo *exo-grammar*))
        (output-filename (output-file *filename*  *output-directory*  *output-filename*)))
+  (when (probe-file output-filename)
+    (cond  (*force-rewrite* (script-debug "Deleting existing file ~A~%" output-filename)
+			    (delete-file  output-filename))
+	   (t (format *error-output* "File ~A exists! Use -f to overwrite." output-filename)
+	      (quit))))
   (script-debug "Output filename ~A~%" (namestring output-filename))
   (with-open-file (stream output-filename :direction :output)
     (unless *quiet* (format t "Generating file ~A~%" output-filename))
