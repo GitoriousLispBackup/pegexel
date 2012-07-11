@@ -1,0 +1,7 @@
+VARIABLES
+((§-walk-through (a b c)) -> (loop repeat 5 collect (list (random 10) (random 10) (random 10))))
+((f d e) -> (loop repeat 3 collect (random 10)))
+((g h i) -> (45 54 45))
+((§-walk-through j) -> (loop repeat 5 summing 1 into v collect v)) 
+GRAMMAR
+(exercise -> (§-* 5 (§-> a) (§-> j) valeurs a b c d e f g h i j newline))
