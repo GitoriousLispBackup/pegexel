@@ -1,11 +1,15 @@
+;; order of variable evaluation follow list.
+;; variables can use functions defined in CODE part.
 VARIABLES
 (?v -> (1+ (random 50)))
 (?% -> (random-divisor (* 100 ?v)))
 GRAMMAR
-(exercise -> (?% nospace % of a number is ?v nospace "." what was the number ? newline))
+(exercise -> (?% nospace % of a number is ?v nospace "." what was the number nospace ? newline))
 CODE
 (defun divisors (N)
-       (loop for i from 1 to (/ N 2) when (zerop (mod N i)) collect i))
+   "List of divisors of number."
+   (loop for i from 1 to (/ N 2) when (zerop (mod N i)) collect i))
 (defun random-divisor (N)
+   "random selected divisor of a number."
    (let ((divisors (divisors N))) 
        (elt divisors (random (length divisors))))) 
