@@ -106,7 +106,8 @@
   "Parse variable list to set them."
   (loop for (var nil val) in *exo-variables*
        for index = 0 then (1+ index)
-       do (eval `(eval-a-variable ',var ',val :var-index ,index))))
+       do (eval `(eval-a-variable ',var ',val :var-index ,index)))
+  (setf *variables* (reverse *variables*)))
 
 (defun length-walk (name)
   "length of the list of values from a walk-through variable."
