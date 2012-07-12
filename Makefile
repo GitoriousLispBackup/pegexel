@@ -47,4 +47,6 @@ install-grammars:
 	${INSTALL} -d ${GRAMMARDIR}
 	${INSTALL} -m 755  -t ${GRAMMARDIR} ${GRAMMARS}
 
-
+install-examples:
+	${INSTALL} -d ${EXAMPLESDIR}
+	${INSTALL} -m 755  -t ${EXAMPLESDIR} ${EXAMPLES}
