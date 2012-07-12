@@ -1,0 +1,8 @@
+;; simple example.
+;; Protect in strings characters LISP will interpret like quote ' or dot.
+;; terminals words can be strings or not.
+;; nospace suppress space after word.
+GRAMMAR
+(exercise -> (a water tank is ?%full full nospace "." if it holds ?content litres of "water," what is the capacity of the water tank nospace ? newline ))
+(?%full -> "55%" "60%" "65%")
+(?content ->  3003 3432 3861)
