@@ -1,0 +1,11 @@
+VARIABLES
+(?v -> (1+ (random 50)))
+(?% -> (random-divisor (* 100 ?v)))
+GRAMMAR
+(exercise -> (?% nospace % of a number is ?v nospace "." what was the number ? newline))
+CODE
+(defun divisors (N)
+       (loop for i from 1 to (/ N 2) when (zerop (mod N i)) collect i))
+(defun random-divisor (N)
+   (let ((divisors (divisors N))) 
+       (elt divisors (random (length divisors))))) 
