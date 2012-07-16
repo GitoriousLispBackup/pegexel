@@ -1,0 +1,12 @@
+VARIABLES
+(?a -> 0)
+(?b -> 3)
+(?f -> (§-s 'sage "latex(f(x=x))"))
+(?c -> (§-s 'sage "latex(g(0,3))"))
+GRAMMAR
+(exercise -> (§-tex vérifier que "l'intégrale" de $ ?f $ est $ ?c $ nospace "."))
+PEGEXEL-SCRIPT (sage :command "/home/yves/sage/bin/sage" :file-type "sage")
+var('x a b')
+f(x) = 7*x^3 - 4*x^2 - 5*x + 1
+g(a,b) = f.integral(x, a=a, b=b)
+print eval(preparse(sys.argv[1])),

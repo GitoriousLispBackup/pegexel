@@ -1,3 +1,8 @@
+The file  src/xcvb/driver.lisp come from the xcvb project (http://common-lisp.net/project/xcvb/ ). It's license is an MIT-style license, placed in the file src/xcvb/LICENSE.
+
+The other files are placed under the following license:
+
+
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 

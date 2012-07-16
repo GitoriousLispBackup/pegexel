@@ -46,6 +46,12 @@
 (defvar *exo-grammar* () "grammar part of exercise template")
 (defvar *exo-code* () "code part of exercise template")
 (defvar *exo-variables* () "variables def part of exercise template")
+
+(defvar *begin-script* "PEGEXEL-SCRIPT" "Start key for script")
+(defvar *end-script* "PEGEXEL-END-SCRIPT" "End key for script")
+
+(defvar *scripts* () "Assoc list for scripts")
+
 (export '(*grammar* *exo-grammar* *exo-code*  *exo-variables* ))
 
 
@@ -237,11 +243,12 @@
 (defvar *libdir* (merge-pathnames (if *run-in-source* "lib/" "share/pegexel/lib/") *basedir*))
 (defvar *hookdir*  (merge-pathnames (if *run-in-source* "hooks/" "share/pegexel/hooks/") *basedir*))
 (defvar *grammardir*  (merge-pathnames (if *run-in-source* "grammars/" "share/pegexel/grammars/") *basedir*))
+(defvar *xcvbdir* (merge-pathnames  (if *run-in-source* "xcvb/" "share/pegexel/xcvb/") *basedir*))
 
-(defun load-files-from-directory (dir)
+(defun load-files-from-directory (dir &key (type "lsp"))
   "Load *.lsp files from directory."
   (loop for  filename in
-       (sort (mapcar #'namestring (directory (make-pathname :directory (pathname-directory dir) :name :wild :type "lsp"))) #'string<)
+       (sort (mapcar #'namestring (directory (make-pathname :directory (pathname-directory dir) :name :wild :type type))) #'string<)
      do (script-debug "Loading file ~A~%" filename)
        (load filename)))
 (export '(*hookdir* *grammardir* load-files-from-directory) )

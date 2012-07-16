@@ -18,11 +18,16 @@
 ; File scaning in string
 ;
 (defun get-file-in-lines (filename)
-  "Read file into a list of string separated by newlines."
+  "Read file into a list of string separated by newlines.
+   Parsing of script is passed to get-extern-script"
   (with-open-file (stream filename)
-		 (loop for line = (read-line stream nil)
+		 (loop 
+		    for line = (read-line stream nil)
+		    for pos = (search *begin-script* line)
 		    while line
-		    collect line
+		    unless pos collect line
+		    when pos collect (subseq line 0 pos)
+		    when pos collect (get-extern-script (subseq line (+ pos (length *begin-script*))) stream)
 		    collect (format nil "~%"))))
 
 (defun get-file-in-string (filename)
