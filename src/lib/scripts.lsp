@@ -37,13 +37,13 @@
 			 (cons (subseq str start-pos)
 			       (loop  
 				  for line = (read-line stream nil)
-				  for pos = (search end-script line)
+				  for pos = (search *end-script* line)
 				  while line
 				  unless pos collecting line into result
 				  when pos collecting (subseq line 0 pos) into result
 				  when pos do 
 				    (progn 
-				      (setq return-str (subseq line (+ pos (length end-script))))
+				      (setq return-str (subseq line (+ pos (length *end-script*))))
 				      (return result))
 				  finally (return result))))
 		 *scripts*))
@@ -58,12 +58,35 @@
 (defun script-content (key)
   (cdddr (assoc key *scripts*)))
 
+(defparameter *pgxl-begin* "<pg" "Begin part of the pegexel var mark.")
+(defparameter *pgxl-end* "xl>" "End part of the pegexel var mark.")
+
+(defun read-in-template (str)
+  (in-package :template)
+  (let ((result (read-from-string str)))
+    (format t "read-in-template ~A ~A ~A~%" result (eval result) (symbol-value (template '?sd)))
+    (in-package :script)
+    result))
+
+(defun replace-pgxl (str)
+    (loop for next-read = 0 then (+ (length *pgxl-end*) begin-end)
+       for position = (search *pgxl-begin* str :start2 next-read)
+       for end-begin = (when position (+ position (length *pgxl-begin*)))
+       for begin-end = (when position (search  *pgxl-end* str :start2 end-begin))
+       for pgxl-value = (when position 
+			  (if begin-end (subseq  str end-begin begin-end)
+			      (error "~A without ~A !" *pgxl-begin* *pgxl-end*)))
+       while position
+       collecting (subseq  str next-read position) into result
+       collecting (format nil "~A" (eval (read-in-template pgxl-value))) into result
+       finally (return (apply #'concatenate 'string (append result (list (subseq str next-read)))))))
+
 (defun run-script (name  params)
   (let* ((type (script-type name))
 	(command (script-command name))
 	(filename (namestring (make-pathname :name (string (gensym "temp-script-")) :type type))))
     (with-open-file (sc filename :direction :output :if-exists :supersede)
-      (format sc "~{~A~%~}" (script-content name)))
+      (format sc "~{~A~%~}" (mapcar #'replace-pgxl (script-content name))))
     (let ((run-command (list 'xd:run-program/ `',(append (when command (list command))
 							 (list filename) 
 							 params)
@@ -72,3 +95,4 @@
       (string-right-trim '(#\Space #\e #\t #\Newline) (eval run-command)))))
 
 (export 'run-script)
+

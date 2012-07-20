@@ -1,12 +1,16 @@
 VARIABLES
 (?a -> 0)
 (?b -> 3)
+(?d -> (mapcar #'(lambda (x) (if (equal 0 (random 2)) (- 0 x) x)) (partition 15 4)))
+(?sd -> (format nil "~{~A~^,~}" ?d))
 (?f -> (§-s 'sage "latex(f(x=x))"))
 (?c -> (§-s 'sage "latex(g(0,3))"))
 GRAMMAR
-(exercise -> (§-tex vérifier que "l'intégrale" de $ ?f $ est $ ?c $ nospace "."))
+(exercise -> (§-tex vérifier que "\[ \int_{" ?a "}^{" ?b "}" ?f "\,\mathrm{d}x" = ?c " \]" ))
 PEGEXEL-SCRIPT (sage :command "/home/yves/sage/bin/sage" :file-type "sage")
-var('x a b')
-f(x) = 7*x^3 - 4*x^2 - 5*x + 1
+var('x')
+def Gf(a,b,c,d):
+    return a*x^3 + b*x^2 + c * x + d
+f = Gf(<pg ?sd xl>) 
 g(a,b) = f.integral(x, a=a, b=b)
-print eval(preparse(sys.argv[1])),
+print eval(preparse(sys.argv[1]))
