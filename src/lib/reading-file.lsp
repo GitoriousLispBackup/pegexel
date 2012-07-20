@@ -111,6 +111,5 @@
     (if  *exo-variables* (nconc *exo-variables* variables)
 	 (setf *exo-variables* variables))
     (when variables (defvar-all))
-    (when code (eval (cons 'progn *exo-code*)))
-    (when variables (eval-variables))))
+    (when code (eval (cons 'progn *exo-code*)))))
 (export 'load-grammar-file-and-eval-code)

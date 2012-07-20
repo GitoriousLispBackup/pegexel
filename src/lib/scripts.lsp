@@ -64,7 +64,6 @@
 (defun read-in-template (str)
   (in-package :template)
   (let ((result (read-from-string str)))
-    (format t "read-in-template ~A ~A ~A~%" result (eval result) (symbol-value (template '?sd)))
     (in-package :script)
     result))
 

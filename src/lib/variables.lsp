@@ -20,20 +20,16 @@
   "Predicat check if symbol is template variable."
   (if (member sym *variables*) t nil))
 
-(defun set-variable (sym val &key (var-index nil) (reinit-symbol nil))
-  "Register and set variable."
-  (pushnew sym *variables*)
-  (when reinit-symbol (setf (get sym 'reinit) reinit-symbol))
-  (setf (symbol-value sym) (eval val))
-  (when var-index (setf (get sym 'var-index) var-index)))
+(defun set-variable (sym val)
+  "Set variable."
+  (setf (symbol-value sym) (eval val)))
 
-(defun set-multiples-variables (listsym listval &key (var-index nil))
+(defun set-multiples-variables (listsym listval)
   "Set list of variables with list of values."
-  (let ((reinit (first listsym))
-	(values (eval-if-needed listval)))
+  (let ((values (eval-if-needed listval)))
     (loop for sym in listsym
        for val in values
-       do (set-variable sym val :var-index var-index :reinit-symbol reinit))))
+       do (set-variable sym val))))
 
 (defun get-walk-through-value (name)
   "Get actual value of variable of type walk-through"
@@ -46,14 +42,11 @@
       (eval values)
       values))
 
-(defun set-walk-through-value (name values &key (var-index nil))
+(defun set-walk-through-value (name values)
   "Set value of variable of type walk-through. Keep list of value and index in symbol's plist."
-  (pushnew name *variables*)
   (setf (get name 'values) (eval-if-needed values))
   (setf (get name 'index) -1)
-  (when var-index (setf (get name 'var-index) var-index))
-  (setf (symbol-value name) 'value-not-set-before-first-call-to-next-walk-!))
-
+  (setf (symbol-value name) 'value-not-set-before-first-call-to-next-step-§->!))
 
 (defun next-walk-in-multiple (name)
   (let ((symbols (get name 'symbols))
@@ -77,30 +70,27 @@
   (funcall *generate* (template 'nothing)))
 (export 'real-next-walk)
 
-(defun set-walk-through-value-in-multiple (name val symbols values &key (var-index nil) (reinit-symbol nil))
-  (pushnew name *variables*)
-  (when reinit-symbol (setf (get name 'reinit) reinit-symbol))
+(defun set-walk-through-value-in-multiple (name val symbols values)
   (setf (get name 'values) values)
   (setf (get name 'symbols) symbols)
   (setf (get name 'index) -1)
-  (when var-index (setf (get name 'var-index) var-index))
-  (setf (symbol-value name) 'value-not-set-before-first-call-to-next-walk-!))
+  (setf (symbol-value name) 'value-not-set-before-first-call-to-next-step-§->!))
 
-(defun set-multiple-walk-through-value (listsym listval &key (var-index nil))
-  (let ((values (eval-if-needed listval))
-	(reinit (first listsym)))
-    (loop for sym in listsym
+(defun set-multiple-walk-through-value (listsym listval)
+  (let ((values (eval-if-needed listval)))
+    (loop 
+       for sym in listsym
        for val in  values
-       do (set-walk-through-value-in-multiple sym val listsym values :var-index var-index :reinit-symbol reinit))))
+       do (set-walk-through-value-in-multiple sym val listsym values))))
 
-(defun eval-a-variable (var val &key (var-index nil))
+(defun eval-a-variable (var val)
   "Parse variable definition and set it (or them)." 
-  (cond ((symbolp var) (set-variable var val :var-index var-index))
+  (cond ((symbolp var) (set-variable var val))
 	((eq-template (first var) '§-walk-through) 
 	 (if (consp (second var))
-	     (set-multiple-walk-through-value (second var) val :var-index var-index)
-	     (set-walk-through-value (second var) val :var-index var-index)))
-	(t (set-multiples-variables var val :var-index var-index))))
+	     (set-multiple-walk-through-value (second var) val)
+	     (set-walk-through-value (second var) val)))
+	(t (set-multiples-variables var val))))
   
 (defun eval-variables ()
   "Parse variable list to set them."
@@ -125,6 +115,7 @@
     (let* ((vardef (elt *exo-variables* (get key 'var-index)))
 	   (var (first vardef))
 	   (val (third vardef)))
+      (script-debug "Initialising ~A with  ~A ~%" key vardef)
       (eval-a-variable var val))))
 (export 'reinit-variable)
 
@@ -134,22 +125,32 @@
        do (reinit-variable k)))
 (export 'reinit-all-variables)
 
-(defun define-variable (name &optional (value nil))
+(defun define-variable (name &key (var-index nil) (reinit-symbol nil))
   "Define a variable."
-  (eval `(defvar ,name ,value)))
-
-(defun define-list-of-variables (varlist)
+  (eval `(defvar ,name nil))
+  (pushnew name *variables*)
+  (when reinit-symbol (setf (get name 'reinit) reinit-symbol))
+  (when var-index (setf (get name 'var-index) var-index)))
+  
+(defun define-list-of-variables (varlist  &key (var-index nil))
   "Define all variable from list."
-  (loop for var in varlist do (define-variable var)))
+  (let ((reinit (first varlist)))
+    (loop for var in varlist 
+       do (define-variable var 
+	      :var-index var-index
+	      :reinit-symbol reinit))))
 
 (defun defvar-all ()
   "Define all variables from template. To suppress 'undefined variable' from templates code."
-    (loop for (vardef nil) in *exo-variables* do
-	 (cond ((symbolp vardef) (define-variable vardef))
+    (loop 
+       for (vardef nil) in *exo-variables*
+       for index = 0 then (1+ index) 
+       do
+	 (cond ((symbolp vardef) (define-variable vardef :var-index index))
 	       ((and (consp vardef) (eq-template (first vardef) '§-walk-through))
 		(if (consp (second vardef))
-		    (define-list-of-variables (second vardef))
-		    (define-variable (second vardef))))
-	       ((consp vardef) (define-list-of-variables vardef))
-	       (t (error "defvar-all should not be here !")))))
-
+		    (define-list-of-variables (second vardef) :var-index index)
+		    (define-variable (second vardef) :var-index index)))
+	       ((consp vardef) (define-list-of-variables vardef :var-index index))
+	       (t (error "defvar-all should not be here !"))))
+    (setf *variables* (reverse *variables*)))
