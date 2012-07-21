@@ -42,5 +42,6 @@
 (export  'eq-template)
 
 (defun script-output (&rest format-values)
+  "Manage normal output of script"
   (unless *quiet* (apply #'format (cons *error-output* format-values))))
 (export 'script-output)
