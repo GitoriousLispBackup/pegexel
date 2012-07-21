@@ -86,22 +86,47 @@
       (get-decoded-time)
     (format nil "~A-~A-~A-~A-~A-~A" year month  date hour  minute second)))
 
+(defvar *scripts-files* nil "pList of written script files")
+
+(defun clean-script-file (name)
+  (let ((filename (getf *scripts-files* name)))
+    (when filename
+      (unless *quiet* (format t "Cleaning ~A script file(s):~%"  name))
+      (loop for temp-file in (directory (make-pathname :directory (pathname-directory filename) 
+						       :name (pathname-name filename)
+						       :type :wild)) do 
+	   (unless *quiet* (format t "~T~A~%"  temp-file))
+	   (delete-file temp-file))
+      (remf *scripts-files* name))))
+
+(defun clean-all-script-files ()
+  (loop for name  in *scripts-files* when (symbolp name)
+       do (clean-script-file name)))
+
+(defun write-if-needed (name)
+  (or (getf *scripts-files* name)
+      (let* ((type (script-type name))
+	     (filename (namestring (make-pathname :directory (pathname-directory *filename*) 
+						  :name (concatenate 'string 
+								     "temp-script-"
+								     (time-string))
+						  :type type))))
+	(unless *quiet* (format t "Writing file ~A~%" filename))
+	(with-open-file (sc filename :direction :output :if-exists :supersede)
+	  (format sc "~{~A~%~}" (mapcar #'replace-pgxl (script-content name))))
+	(setf (getf *scripts-files* name) filename)
+	filename)))
+  
+
 (defun run-script (name  params)
-  (let* ((type (script-type name))
-	 (command (script-command name))
-	 (filename (namestring (make-pathname :directory (pathname-directory *filename*) 
-					      :name (concatenate 'string 
-								 "temp-script-"
-								 (time-string))
- 					      :type type))))
-    (with-open-file (sc filename :direction :output :if-exists :supersede)
-      (format sc "~{~A~%~}" (mapcar #'replace-pgxl (script-content name))))
-    (let ((run-command (list 'xd:run-program/ `',(append (when command (list command))
-							 (list filename) 
-							 params)
-							 :output :string)))
-      (script-debug "Running script with command: ~A~%" run-command)
-      (string-right-trim '(#\Space #\e #\t #\Newline) (eval run-command)))))
+    (let* ((command (script-command name))
+	   (filename (write-if-needed name))
+	   (run-command (list 'xd:run-program/ `',(append (when command (list command))
+							  (list filename) 
+							  params)
+			      :output :string)))
+      (unless *quiet* (format t "Running script with command:~%~T~{~A~^ ~}~%" (eval (second run-command))))
+      (string-right-trim '(#\Space #\e #\t #\Newline) (eval run-command))))
 
 (export 'run-script)
 

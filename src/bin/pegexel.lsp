@@ -283,6 +283,7 @@
      (let* ((syms (generate-exo *exo-grammar*))
 	    (output-filename (output-file *filename*  *output-directory*  *output-filename*))
 	    (output-stream (output-stream output-filename)))
+       (clean-all-script-files)
        (unless *quiet* 
 	 (if (string= output-filename "--")
 	     (format t "Generating on standard output.~%")
