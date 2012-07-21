@@ -80,10 +80,20 @@
        collecting (format nil "~A" (eval (read-in-template pgxl-value))) into result
        finally (return (apply #'concatenate 'string (append result (list (subseq str next-read)))))))
 
+(defun time-string ()
+  (multiple-value-bind
+	(second minute hour date month year day-of-week dst-p tz)
+      (get-decoded-time)
+    (format nil "~A-~A-~A-~A-~A-~A" year month  date hour  minute second)))
+
 (defun run-script (name  params)
   (let* ((type (script-type name))
-	(command (script-command name))
-	(filename (namestring (make-pathname :name (string (gensym "temp-script-")) :type type))))
+	 (command (script-command name))
+	 (filename (namestring (make-pathname :directory (pathname-directory *filename*) 
+					      :name (concatenate 'string 
+								 "temp-script-"
+								 (time-string))
+ 					      :type type))))
     (with-open-file (sc filename :direction :output :if-exists :supersede)
       (format sc "~{~A~%~}" (mapcar #'replace-pgxl (script-content name))))
     (let ((run-command (list 'xd:run-program/ `',(append (when command (list command))
