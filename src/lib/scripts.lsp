@@ -88,15 +88,23 @@
 
 (defvar *scripts-files* nil "pList of written script files")
 
+
+(defun get-files-by-basename (filename)
+  (directory (make-pathname :directory (pathname-directory filename) 
+			    :name (pathname-name filename)
+			    :type :wild)))
+
 (defun clean-script-file (name)
   (let ((filename (getf *scripts-files* name)))
     (when filename
-      (unless *quiet* (format t "Cleaning ~A script file(s):~%"  name))
-      (loop for temp-file in (directory (make-pathname :directory (pathname-directory filename) 
-						       :name (pathname-name filename)
-						       :type :wild)) do 
-	   (unless *quiet* (format t "~T~A~%"  temp-file))
-	   (delete-file temp-file))
+      (cond (*keep-temp-files*  (script-output "Not cleaning ~A script file(s):~%"  name)
+				(loop for temp-file in (get-files-by-basename filename) 
+				   do (script-output "~T~A~%"  temp-file)))
+	    (t (script-output "Cleaning ~A script file(s):~%"  name)
+	       (loop for temp-file in (get-files-by-basename filename) 
+		  do 
+		    (script-output "~T~A~%"  temp-file)
+		    (delete-file temp-file))))
       (remf *scripts-files* name))))
 
 (defun clean-all-script-files ()
@@ -111,7 +119,7 @@
 								     "temp-script-"
 								     (time-string))
 						  :type type))))
-	(unless *quiet* (format t "Writing file ~A~%" filename))
+	(script-output "Writing file ~A~%" filename)
 	(with-open-file (sc filename :direction :output :if-exists :supersede)
 	  (format sc "~{~A~%~}" (mapcar #'replace-pgxl (script-content name))))
 	(setf (getf *scripts-files* name) filename)
@@ -125,7 +133,7 @@
 							  (list filename) 
 							  params)
 			      :output :string)))
-      (unless *quiet* (format t "Running script with command:~%~T~{~A~^ ~}~%" (eval (second run-command))))
+      (script-output "Running script with command:~%~T~{~A~^ ~}~%" (eval (second run-command)))
       (string-right-trim '(#\Space #\e #\t #\Newline) (eval run-command))))
 
 (export 'run-script)

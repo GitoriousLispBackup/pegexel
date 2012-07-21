@@ -115,6 +115,7 @@
 
 (defvar *debug* nil "show debug information")
 (defvar *quiet* nil "suppress normal output")
+(defvar *keep-temp-files* nil "Keep temporary files")
 (defvar *default-tex-environment* "Exercise" "if grammar specify TEX, set output in environment ENV.")
 (defvar *no-escape* nil "do not escape backslashes in strings" )
 (defvar *help*  nil "print usage information")
@@ -136,6 +137,7 @@
     (t "-o" "--output" *output-filename* "FILE")
     (t "-f" "--force"  *force-rewrite* nil)
     (t "-r" "--repeat" *repeat* "NUM")
+    (t "-k" "--keep-files" *keep-temp-files* nil)
     (nil "-s" "--run-in-source" *run-in-source* nil))
   "List of parsed script arguments")
 
@@ -284,9 +286,8 @@
 	    (output-filename (output-file *filename*  *output-directory*  *output-filename*))
 	    (output-stream (output-stream output-filename)))
        (clean-all-script-files)
-       (unless *quiet* 
-	 (if (string= output-filename "--")
-	     (format t "Generating on standard output.~%")
-	     (format t "Generating file ~A~%" output-filename)))
+       (if (string= output-filename "--")
+	   (script-output "Generating on standard output.~%")
+	   (script-output "Generating file ~A~%" output-filename))
        (format output-stream "~{~A~^~@[ ~]~}~^ ~%" (sym-to-string syms))
        (unless (equal *standard-output* output-stream) (close output-stream))))

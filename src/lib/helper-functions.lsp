@@ -40,3 +40,7 @@
   "Check if 'cible is the :template version of sym"
   (equal cible (template sym)))
 (export  'eq-template)
+
+(defun script-output (&rest format-values)
+  (unless *quiet* (apply #'format (cons *error-output* format-values))))
+(export 'script-output)
