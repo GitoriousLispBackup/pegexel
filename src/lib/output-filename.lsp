@@ -29,7 +29,7 @@
 		   collect  (subseq (pathname-name f) (length name))))
  	 (number (loop for f in files when (check-number3 f)
 		       maximizing (read-from-string f) into max
-		       finally (return (1+ max)))))
+		       finally (return (1+ (or max  0))))))
     (make-pathname :directory (pathname-directory output-directory)
 		   :name (concatenate 'string name (format nil "~3,'0d" number))
 		   :type *output-type*)))

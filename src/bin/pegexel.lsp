@@ -1,4 +1,5 @@
-#!/usr/bin/sbcl --script
+#!/usr/bin/clisp -q -q
+;#!/usr/bin/sbcl --script
 ;#!/usr/bin/gcl -f
 ;#!/usr/bin/sbcl --script
 ;#!/usr/bin/clisp -q -q
