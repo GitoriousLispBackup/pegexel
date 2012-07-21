@@ -7,6 +7,7 @@ BINDIR := ${DESTDIR}/bin
 LIBDIR := ${SHAREDIR}/lib
 HOOKDIR := ${SHAREDIR}/hooks
 GRAMMARDIR := ${SHAREDIR}/grammars
+XCVBDIR := ${SHAREDIR}/xcvb
 EXAMPLESDIR := ${DESTDIR}/doc/pegexel/examples
 
 LISP := /usr/bin/sbcl
@@ -22,6 +23,7 @@ SCRIPT := $(shell ls src/bin/*.lsp)
 LIBS := $(shell ls  src/lib/*.lsp)
 HOOKS :=  $(shell ls src/hooks/*.lsp)
 GRAMMARS := $(shell ls src/grammars/*.grammar)
+XCVBD := $(shell ls src/xcvb/*.lisp)
 EXAMPLES := $(shell ls examples/*.pgxl)
 
 all:
@@ -29,7 +31,7 @@ all:
 shebang:
 	@echo "${SHEBANG}"
 
-install: install-bin install-hooks install-libs install-grammars
+install: install-bin install-hooks install-libs install-grammars install-xcvb
 
 install-bin:
 	${INSTALL} -d ${BINDIR}
@@ -46,6 +48,10 @@ install-libs:
 install-grammars:
 	${INSTALL} -d ${GRAMMARDIR}
 	${INSTALL} -m 755  -t ${GRAMMARDIR} ${GRAMMARS}
+
+install-xcvb:
+	${INSTALL} -d ${XCVBDIR}
+	${INSTALL} -m 755  -t ${XCVBDIR} ${XCVBD}
 
 install-examples:
 	${INSTALL} -d ${EXAMPLESDIR}
