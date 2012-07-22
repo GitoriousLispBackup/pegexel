@@ -47,13 +47,19 @@
 (defun is-absolute (dir)
   (equal :absolute (first (pathname-directory (or dir "")))))
 
+(defun merge-directories (inputdir where outputdir)
+  (append (pathname-directory where)
+	  (cdr  ;remove :relative from the front
+           (pathname-directory inputdir))
+	  (cdr (pathname-directory outputdir))))
+
 (defun get-full-pathname (inputdir where outputdir)
   "merges pathnames with output dir, input dir (if not absolute), output file dir."
   (let ((checked-inputdir (unless (is-absolute inputdir) inputdir)))
-    (merge-pathnames (merge-pathnames outputdir (or checked-inputdir (pathname ""))) (or where (pathname  "")))))
+    (make-pathname :directory (merge-directories checked-inputdir  where outputdir))))
 
 (defun check-file-type (file)
-  (if (equal *output-type* (pathname-type file))
+  (if (not (equal *output-type* (pathname-type file)))
       (concatenate 'string file "." *output-type*)
       file))
 
