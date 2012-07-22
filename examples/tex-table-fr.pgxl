@@ -3,8 +3,7 @@ VARIABLES
 ((h1 h2 h3 h4 h5 h6 h7) ->  (partition 30 7 :min 1 :sigma 1.5 :mu 3 :normal t))
 (a -> 7)
 GRAMMAR
-(exercise -> (§-tex  situation table enonce code))
-(code -> (la valeur est (§-e a) et par le "code" (§-e (*a a))))
+(exercise -> (§-tex  situation table enonce))
 (enonce -> (upcase à partir de ce tableau nospace "," construire un histogramme pour representer ces données ?point))
 (situation -> (question a-qui quoi))
 (question −> (qqun "a demandé"))
@@ -32,5 +31,3 @@ GRAMMAR
 		      ("Nombre" h1 h2 h3 h4 h5 h6 h7)
 		      hline) 
 	   "\end{center}" NEWLINE))
-CODE
-(defun *a (x) (* a x))

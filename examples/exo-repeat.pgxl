@@ -1,4 +1,0 @@
-VARIABLES
-(n -> (1+ 7))
-GRAMMAR
-(exercise -> ((§-* n moi je) nospace "." newline))
