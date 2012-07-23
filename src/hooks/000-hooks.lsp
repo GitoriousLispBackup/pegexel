@@ -69,14 +69,19 @@
   "Evaluate and store (hook)."
   (funcall *generate* (record-value name  (eval sexpr))))
 
-;; repeat n times
-(defun §-* (times &rest listval)
-  "Repeat generation (hook)."
-  (funcall *generate*
-	   (apply #'append 
-		  (loop repeat (eval times)
-			collect listval))))
+(defun evaluable-p (expr)
+  (or (not (consp expr))
+      (fboundp (first expr))))
 
+(defun §-* (times &rest listval)
+  (apply #'append 
+	 (cond ((evaluable-p times)
+		(loop repeat (eval times)
+		   collect (funcall *generate* listval)))
+;; TODO add an error if (first times) is in variables !!
+	       (t (eval `(defvar  ,(template (first times)) nil))  ; I need dynamic scoping
+		  (eval `(loop for ,(template (first times)) from 0 upto ,(1- (second times))
+			    collect (funcall *generate* ',listval)))))))
 
 (defun reinit-generated-value (key)
   "Suppress stored value in plist."

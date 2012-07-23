@@ -1,0 +1,8 @@
+VARIABLES
+(i -> 90)
+GRAMMAR
+(exercise -> ( at begin valeur repeat finally valeur repeat2))
+(valeur ->("i =" i nospace "." newline))
+(repeat ->(§-* (i 10) now b newline))
+(b -> ("i =" i nospace "." ))
+(repeat2 -> (you can "repeat" (§-* 3 Z) without var too))
