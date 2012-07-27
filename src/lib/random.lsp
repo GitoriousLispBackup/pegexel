@@ -48,10 +48,104 @@
   (let ((rlist (p-list-of-k p min)))
     (loop repeat (* (- n (* min p)) unit-th)
        do 
-;	 (setf *random-state* (make-random-state t))
 	 (let ((pos (if normal (random-normal p :mu mu :sigma sigma)
 			(random p))))
 	   (incf (nth pos rlist) (/ 1 unit-th))))
     (if float (mapcar #'float rlist)
 	rlist)))
 (export 'partition)
+
+;;
+;; Cartesian product fo lists
+;; This version is inefficient in GNU CLISP. Below better solution
+;;
+;; (defun product (&rest lists)
+;;   "Cartesian product of lists filtered by :test test function.
+;;    Make sure test function accept one argument per list."
+;;   (let ((test (cadr (member :test lists))))
+;;     (when test (setf lists (delete test lists))
+;; 	  (setf lists (delete :test lists)))
+;;     (product_aux lists nil :test test)))
+;; (export 'product)
+
+;; (defun product_aux (lists elts &key (test nil))
+;;   "Auxiliary version recursive"
+;;   (cond ((null lists) (let ((rev-elts (reverse elts)))
+;; 		       (if test 
+;; 			   (when (apply test rev-elts) rev-elts)
+;; 			   rev-elts)))
+;; 	((cdr lists) (apply #'append 
+;; 			    (loop for i in (first lists) collect
+;; 				 (product_aux (cdr lists) (cons i elts) :test test))))
+;; 	(t (loop for i in (first lists) 
+;; 	      for result =  (product_aux (cdr lists) (cons i elts) :test test)
+;; 		when result collect result))))
+
+
+;; This version comes from 
+;; http://objectmix.com/lisp/337028-learning-lisp-cartesian-product-critique-4.html#post1223834
+(defun cartesian* (&rest sets)
+  "Cartesian product of lists"
+  (reduce
+   (lambda (xs ys)
+     (mapcan
+      (lambda (x)
+	(mapcar
+	 (lambda (y)
+	   (cons x y))
+	 ys))
+      xs))
+   sets
+   :initial-value '(()) :from-end t))
+
+;;
+;; Filter results of cartesian product
+;; 
+(defun cartesian*-test (&rest lists)
+  "Cartesian product, results filtered by :test test"
+  (let ((test (cadr (member :test lists))))
+    (when test (setf lists (delete test lists))
+	  (setf lists (delete :test lists)))
+    (if test (mapcan #'(lambda (x) (apply test x)) (apply #'cartesian* lists))
+	(apply #'cartesian* lists))))
+(export 'cartesian*  'cartesian*-test)
+
+
+;;
+;; Efficient if n/N is small (< 1/3 or something like that).
+;; Use (random-n-elt n (cartesian*-test list1 list2 ... :test test))
+;; in other case.
+(defun random-n-elt-from-* (n &rest lists)
+  "Choose ramdomly n elts from cartesian product
+   conforming test".
+  (let ((test (cadr (member :test lists)))
+	(result nil))
+    (when test (setf lists (delete test lists))
+	  (setf lists (delete :test lists)))
+    (loop while (< (length result) n) 
+       do
+	 (let ((candidat (mapcar #'random-elt lists)))
+	   (when (or (null test) (apply test candidat)) 
+	     (pushnew candidat result :test #'equal))))
+    result))
+
+(defun random-n-elt (n list)
+  "Return n random elts from list.
+   ramdomized list if n >= (length list)."
+  (random-n-elt-aux n (copy-list list) (length list) nil))
+(export 'random-n-elt)
+
+(defun random-n-elt-aux (n list length results)
+  (cond ((zerop (* n length)) results)
+	(t (let* ((indice (random length))
+		  (place (nthcdr indice list))
+		  (result (first place)))
+	     (setf (first place) (first list))
+	     (random-n-elt-aux (1- n) (cdr list) (1- length) (cons result results))))))
+
+(defun randomize (list)
+  "return a list with same elements
+    as list in random order"
+  (random-n-elt (length list) list))
+(export 'randomize)
+

@@ -37,6 +37,7 @@
 (defun random-elt (choices)
   "Choose an element from a list at random."
   (elt choices (random (length choices))))
+(export 'random-elt)
 
 
 (defun variable? (phrase)
