@@ -37,10 +37,12 @@
 (export 'get-walk-through-value)
 
 (defun eval-if-needed (values)
-  (if (and (symbolp (first values))
-	   (fboundp (first values)))
-      (eval values)
-      values))
+  (cond ((and (symbolp values) (boundp values)) (eval values))
+	((and (consp values)
+	      (symbolp (first values))
+	      (fboundp (first values)))
+	 (eval values))
+	(t values)))
 
 (defun set-walk-through-value (name values)
   "Set value of variable of type walk-through. Keep list of value and index in symbol's plist."
@@ -54,8 +56,8 @@
 	(index (get name 'index)))
     (when (< index (1- (length-walk name)))
       (loop for sym in symbols
-	   for val in (elt values (1+ index))
-	   do 
+	 for val in (elt values (1+ index))
+	 do 
 	   (incf (get  sym 'index))
 	   (setf (symbol-value sym) val)))))
 

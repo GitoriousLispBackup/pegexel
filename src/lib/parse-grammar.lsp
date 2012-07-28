@@ -50,12 +50,11 @@
 (defun generate (phrase)
   "Generate a random sentence or phrase"
   (script-debug "generate ->  ~A~%" phrase)
-  (if (listp phrase)
-      (hook-or-mappend phrase)
-      (let ((choices (rewrites phrase)))
-	(if (null choices)
-	    (list (variable? phrase))
-	    (funcall *generate* (random-elt choices))))))
+  (let ((choices (rewrites phrase)))
+    (cond ((listp phrase) (hook-or-mappend phrase))
+	  ((variable-p phrase)  (funcall *generate* (eval phrase)))
+	  ((null choices) (list phrase))
+	  (t (funcall *generate* (random-elt choices))))))
 
 (setf *generate* #'generate)
 

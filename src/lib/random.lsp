@@ -106,9 +106,9 @@
   (let ((test (cadr (member :test lists))))
     (when test (setf lists (delete test lists))
 	  (setf lists (delete :test lists)))
-    (if test (mapcan #'(lambda (x) (apply test x)) (apply #'cartesian* lists))
+    (if test (mapcan #'(lambda (x) (and (apply test x) (list x))) (apply #'cartesian* lists))
 	(apply #'cartesian* lists))))
-(export 'cartesian*  'cartesian*-test)
+(export '(cartesian*  cartesian*-test))
 
 
 ;;
@@ -117,7 +117,7 @@
 ;; in other case.
 (defun random-n-elt-from-* (n &rest lists)
   "Choose ramdomly n elts from cartesian product
-   conforming test".
+   conforming test."
   (let ((test (cadr (member :test lists)))
 	(result nil))
     (when test (setf lists (delete test lists))
@@ -128,6 +128,7 @@
 	   (when (or (null test) (apply test candidat)) 
 	     (pushnew candidat result :test #'equal))))
     result))
+(export 'random-n-elt-from-*)
 
 (defun random-n-elt (n list)
   "Return n random elts from list.
