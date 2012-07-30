@@ -133,7 +133,8 @@
 (defun random-n-elt (n list)
   "Return n random elts from list.
    ramdomized list if n >= (length list)."
-  (random-n-elt-aux n (copy-list list) (length list) nil))
+  (if (< n 1) ()
+      (random-n-elt-aux n (copy-list list) (length list) nil)))
 (export 'random-n-elt)
 
 (defun random-n-elt-aux (n list length results)
@@ -143,6 +144,7 @@
 		  (result (first place)))
 	     (setf (first place) (first list))
 	     (random-n-elt-aux (1- n) (cdr list) (1- length) (cons result results))))))
+;(export 'random-n-elt-aux)
 
 (defun randomize (list)
   "return a list with same elements
