@@ -44,6 +44,7 @@
 
 (defun set-walk-through-value (name values)
   "Set value of variable of type walk-through. Keep list of value and index in symbol's plist."
+;  (script-debug "set-walk-through-value ~A ~A~%" name (eval-if-needed values))
   (setf (get name 'values) (eval-if-needed values))
   (setf (get name 'index) -1)
   (setf (symbol-value name) 'value-not-set-before-first-call-to-next-step-§->!))
@@ -70,7 +71,8 @@
   (funcall *generate* (template 'nothing)))
 (export 'real-next-walk)
 
-(defun set-walk-through-value-in-multiple (name val symbols values)
+(defun set-walk-through-value-in-multiple (name  symbols values)
+;  (script-debug "set-walk-through-value ~A ~A ~A~%" name  symbols values)
   (setf (get name 'values) values)
   (setf (get name 'symbols) symbols)
   (setf (get name 'index) -1)
@@ -80,8 +82,7 @@
   (let ((values (eval-if-needed listval)))
     (loop 
        for sym in listsym
-       for val in  values
-       do (set-walk-through-value-in-multiple sym val listsym values))))
+       do (set-walk-through-value-in-multiple sym listsym values))))
 
 (defun eval-a-variable (var val)
   "Parse variable definition and set it (or them)." 
