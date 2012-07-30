@@ -80,7 +80,8 @@
 		   collect (funcall *generate* listval)))
 ;; TODO add an error if (first times) is in variables !!
 	       (t (eval `(defvar  ,(template (first times)) nil))  ; I need dynamic scoping
-		  (eval `(loop for ,(template (first times)) from 0 upto ,(1- (second times))
+		  (pushnew (template (first times)) *variables*)
+		  (eval `(loop for ,(template (first times)) from 0 upto ,(1- (eval (second times)))
 			    collect (funcall *generate* ',listval)))))))
 
 (defun reinit-generated-value (key)

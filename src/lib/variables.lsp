@@ -128,6 +128,7 @@
 
 (defun define-variable (name &key (var-index nil) (reinit-symbol nil))
   "Define a variable."
+  (when (and *items* (eq-template name '?n-items)) (return-from define-variable))
   (eval `(defvar ,name nil))
   (pushnew name *variables*)
   (when reinit-symbol (setf (get name 'reinit) reinit-symbol))

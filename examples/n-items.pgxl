@@ -1,0 +1,9 @@
+VARIABLES
+; the ?n-items variable can be set from command line with  soething like "-i 10" or "--items 10".
+; Anyway you need to set a default value.
+(?n-items -> 20)
+GRAMMAR
+(exercise -> repeat)
+(repeat ->(§-* (i ?n-items) now b newline))
+(b -> ("i =" i nospace "." ))
+

@@ -55,7 +55,7 @@
 (defvar *variables* ()  "List of variables.")
 
 
-(export '(*grammar* *exo-grammar* *exo-code*  *exo-variables* ))
+(export '(*grammar* *exo-grammar* *exo-code*  *exo-variables* *variables*))
 
 
 (use-package :template)
@@ -128,6 +128,7 @@
 (defvar *force-rewrite* nil "Force overwrite existing output file.")
 (defvar *repeat* 1 "Repeat generation (exclude -o --output).")
 (defvar *levels* nil "If template uses LEVEL facility, choose level parts.")
+(defvar *items* nil "Set variable ?n-items to NUM.")
 (export '(*debug* *no-escape* *default-tex-environment*))
 
 ; show short long var string
@@ -143,6 +144,7 @@
     (t "-r" "--repeat" *repeat* "NUM")
     (t "-k" "--keep-files" *keep-temp-files* nil)
     (t "-l" "--levels" *levels* "NUMS")
+    (t "-i" "--items"  *items* "NUM")
     (nil "-s" "--run-in-source" *run-in-source* nil))
   "List of parsed script arguments")
 

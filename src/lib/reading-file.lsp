@@ -119,4 +119,5 @@
     (when variables (defvar-all))
     (when code (eval (cons 'progn *exo-code*)))
     (when levels (init-levels))))
+    (init-items)
 (export 'load-grammar-file-and-eval-code)
