@@ -72,23 +72,27 @@
 (defvar grammar nil "Local to put read grammar in.")
 (defvar code nil "Local to put read grammar in.")
 (defvar variables nil "Local to put read variables in.")
+(defvar levels nil "Local to put read variables in.")
 (defvar exo-sep (list (template 'grammar) 'grammar 
 		      (template 'code) 'code
-		      (template 'variables) 'variables)
+		      (template 'variables) 'variables
+		      (template 'levels) 'levels)
   "Match template symbol with sexpr destination." )
 
 (defun split-exercice (content)
   "Split parsed content into variable, grammar, code parts."
   (setf grammar nil)
   (setf code nil)
+  (setf variables nil)
+  (setf levels nil)
   (let* ((part nil))
     (dolist (item content)
       (let ((sep-item (getf exo-sep item)))
 	(cond (sep-item (setf part sep-item))
 	      ((null part) nil)
 	      (t (setf (symbol-value part) (cons item (symbol-value part)))))))
-    (script-debug "Parsed :~%grammar~%~A~%/grammar~%code~%~A~%/code~%variables~%~A~%/variables~%" grammar code variables)
-    (values (reverse grammar)  (reverse code) (reverse variables))))
+    (script-debug "Parsed :~%grammar~%~A~%/grammar~%code~%~A~%/code~%variables~%~A~%/variables~%levels~%~A~%/levels~%" grammar code variables levels)
+    (values (reverse grammar)  (reverse code) (reverse variables) (reverse levels))))
 
 ;
 ; load supplementary grammar file
@@ -103,13 +107,16 @@
 	(variables nil))
     (script-debug "Reading and parsing file ~A~%" filename)
     (unless filename (error "File not found  !"))
-    (multiple-value-setq (grammar code variables) (split-exercice (read-grammar filename)))
+    (multiple-value-setq (grammar code variables levels) (split-exercice (read-grammar filename)))
     (if *exo-grammar* (nconc *exo-grammar* grammar)
 	(setf *exo-grammar* grammar))
     (if *exo-code* (nconc *exo-code* code)
 	(setf *exo-code* code))
     (if  *exo-variables* (nconc *exo-variables* variables)
 	 (setf *exo-variables* variables))
+    (if *exo-levels* (nconc  *exo-levels* levels)
+	(setf *exo-levels* levels))
     (when variables (defvar-all))
-    (when code (eval (cons 'progn *exo-code*)))))
+    (when code (eval (cons 'progn *exo-code*)))
+    (when levels (init-levels))))
 (export 'load-grammar-file-and-eval-code)

@@ -14,8 +14,6 @@
     ;; You should have received a copy of the GNU Affero General Public License
     ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-(defvar *variables* ()  "List of variables.")
-
 (defun variable-p (sym)
   "Predicat check if symbol is template variable."
   (if (member sym *variables*) t nil))
@@ -107,7 +105,8 @@
 (export 'length-walk)
 
 (defun check-reinit (key)
-  (cond ((not (get key 'reinit)) t)
+  (cond ((get key 'no-reinit) nil)
+	((not (get key 'reinit)) t)
 	((equal (get key 'reinit) key) t)
 	(t nil)))
 

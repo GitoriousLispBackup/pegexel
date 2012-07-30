@@ -46,11 +46,14 @@
 (defvar *exo-grammar* () "grammar part of exercise template")
 (defvar *exo-code* () "code part of exercise template")
 (defvar *exo-variables* () "variables def part of exercise template")
+(defvar *exo-levels* () "levels part of exercice template")
 
 (defvar *begin-script* "PEGEXEL-SCRIPT" "Start key for script")
 (defvar *end-script* "PEGEXEL-END-SCRIPT" "End key for script")
 
 (defvar *scripts* () "Assoc list for scripts")
+(defvar *variables* ()  "List of variables.")
+
 
 (export '(*grammar* *exo-grammar* *exo-code*  *exo-variables* ))
 
@@ -124,6 +127,7 @@
 (defvar *output-filename* nil  "output filename (default generated from template filename).")
 (defvar *force-rewrite* nil "Force overwrite existing output file.")
 (defvar *repeat* 1 "Repeat generation (exclude -o --output).")
+(defvar *levels* nil "If template uses LEVEL facility, choose level parts.")
 (export '(*debug* *no-escape* *default-tex-environment*))
 
 ; show short long var string
@@ -138,6 +142,7 @@
     (t "-f" "--force"  *force-rewrite* nil)
     (t "-r" "--repeat" *repeat* "NUM")
     (t "-k" "--keep-files" *keep-temp-files* nil)
+    (t "-l" "--levels" *levels* "NUMS")
     (nil "-s" "--run-in-source" *run-in-source* nil))
   "List of parsed script arguments")
 
