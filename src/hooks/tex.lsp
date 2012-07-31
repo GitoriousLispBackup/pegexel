@@ -86,3 +86,6 @@
 (defun §-tex-env (name &rest listval)
   "Output generic tex environment (hook)."
   (funcall *generate* (append (set-tex-env name) listval (set-tex-env name :end t))))
+
+(defun §-tex-si (number unit)
+  (funcall *generate* (list (template 'tex-si) number (template 'nospace) "}{" (template 'nospace) unit (template 'nospace) "}")))
