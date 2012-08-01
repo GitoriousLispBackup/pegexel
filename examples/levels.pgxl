@@ -1,10 +1,10 @@
-;; simple example.
-;; Protect in strings characters LISP will interpret like quote ' or dot.
-;; terminals words can be strings or not.
-;; nospace suppress space after word.
-LEVELS (:default)
-(0 -> ("25%" "75%" "50%"))
-(1 -> ("55%" "60%" "65%"))
+;; levels  example.
+;; ?levels groups the RHS parts, repeted following level specification
+;; (arguments of script or :default part or one of each). 
+;; This is to allow choice of difficulty from command line.
+LEVELS (:default "0,0,1")
+(0 -> "25%" "75%" "50%")
+(1 -> "55%" "60%" "65%")
 VARIABLES
 (?%full -> (random-elt ?levels))
 (?content -> (random-elt '(3003 3432 3861)))
