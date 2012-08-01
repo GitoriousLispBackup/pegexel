@@ -20,7 +20,7 @@
 
 (defun set-variable (sym val)
   "Set variable."
-  (setf (symbol-value sym) (eval val)))
+  (setf (symbol-value sym) (eval-if-needed val)))
 
 (defun set-multiples-variables (listsym listval)
   "Set list of variables with list of values."
