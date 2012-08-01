@@ -152,3 +152,6 @@
   (random-n-elt (length list) list))
 (export 'randomize)
 
+(defun range (&optional &key (min 0) (max 10))
+  (loop for i from min to max collect i))
+(export 'range)
