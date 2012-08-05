@@ -44,7 +44,7 @@
 
 (defun set-walk-through-value (name values)
   "Set value of variable of type walk-through. Keep list of value and index in symbol's plist."
-;  (script-debug "set-walk-through-value ~A ~A~%" name (eval-if-needed values))
+  (script-debug "set-walk-through-value ~A ~A~%" name (eval-if-needed values))
   (setf (get name 'values) (eval-if-needed values))
   (setf (get name 'index) -1)
   (setf (symbol-value name) 'value-not-set-before-first-call-to-next-step-§->!))
@@ -72,7 +72,8 @@
 (export 'real-next-walk)
 
 (defun set-walk-through-value-in-multiple (name  symbols values)
-;  (script-debug "set-walk-through-value ~A ~A ~A~%" name  symbols values)
+  (when (equal name (get name 'reinit))
+    (script-debug "walk-through list for ~A is ~A~%" symbols values))
   (setf (get name 'values) values)
   (setf (get name 'symbols) symbols)
   (setf (get name 'index) -1)
