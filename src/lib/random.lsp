@@ -155,3 +155,7 @@
 (defun range (&optional &key (min 0) (max 10))
   (loop for i from min to max collect i))
 (export 'range)
+
+(defun random-on-range (&optional &key (min 0) (max 10))
+  (+ min (random (1+ (- max min)))))
+(export 'random-on-range)
