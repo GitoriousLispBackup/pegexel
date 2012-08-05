@@ -63,8 +63,8 @@
     (eval `(defvar ,level-var nil))
     (pushnew level-var *variables*)
     (setf (get level-var 'no-reinit) t)
-    (setf (symbol-value level-var) (apply #'append (mapcar  #'(lambda (x) (eval-if-needed (rest (rest (assoc x *exo-levels*))))) *levels*))))
-  (script-debug "Levels *variables* ~A ~A~%" *variables* (symbol-value (template '?levels))))
+    (setf (symbol-value level-var) (apply #'append (mapcar  #'(lambda (x) (mapcar #'eval-if-needed (rest (rest (assoc x *exo-levels*))))) *levels*)))
+    (script-debug "LEVELS ?levels is ~A~%" (symbol-value level-var))))
 
 (defun init-levels ()
   "Initialise levels. Set *levels* (list of levels) and ?levels (list of values)."
