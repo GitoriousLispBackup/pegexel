@@ -285,6 +285,7 @@
 ;
 
 (load-grammar-file-and-eval-code  *filename* :main t)
+(load-grammar-file-and-eval-code "standard")
 
 ; generate and print
 ; generate before get output filename because extension can be changed in generation.

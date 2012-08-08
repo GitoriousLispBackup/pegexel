@@ -1,0 +1,8 @@
+GRAMMAR
+(?period -> (nospace "."))
+(?comma -> (nospace ","))
+(?exclam -> (nospace "!"))
+(?colon -> (nospace ":"))
+(?semicol -> (nospace ";"))
+(?apos -> (nospace "'" nospace))
+(?question -> (nospace "?"))
